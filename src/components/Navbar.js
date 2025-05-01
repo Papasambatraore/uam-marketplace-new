@@ -26,6 +26,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
+const SUPPORT_PHONE = '+221774907982';
+
 const Navbar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -125,24 +127,31 @@ const Navbar = () => {
       <Button
         color="inherit"
         startIcon={<WhatsAppIcon />}
-        href="https://wa.me/2210000000000"
+        href={`https://wa.me/${SUPPORT_PHONE}`}
         target="_blank"
         sx={{
           mx: 1,
           py: 1,
           fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+          backgroundColor: '#25D366',
+          color: 'white',
+          borderRadius: '20px',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
           '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: '#128C7E',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
           },
+          transition: 'all 0.3s ease',
         }}
       >
-        Support
+        Support WhatsApp
       </Button>
     </>
   );
 
   return (
-    <AppBar position="sticky" elevation={1}>
+    <AppBar position="sticky" elevation={1} sx={{ backgroundColor: '#1976d2' }}>
       <Toolbar sx={{ 
         justifyContent: 'space-between',
         px: { xs: 1, sm: 2, md: 3 },
@@ -154,10 +163,11 @@ const Navbar = () => {
           to="/"
           sx={{
             textDecoration: 'none',
-            color: 'inherit',
+            color: 'white',
             fontWeight: 'bold',
             letterSpacing: 1,
             fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+            textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
           }}
         >
           UAM Marketplace
@@ -186,7 +196,7 @@ const Navbar = () => {
           sx: {
             width: '100%',
             maxWidth: 300,
-            backgroundColor: theme.palette.primary.main,
+            backgroundColor: '#1976d2',
             color: 'white',
           },
         }}
@@ -291,17 +301,30 @@ const Navbar = () => {
           <ListItem
             button
             component="a"
-            href="https://wa.me/2210000000000"
+            href={`https://wa.me/${SUPPORT_PHONE}`}
             target="_blank"
             onClick={() => setDrawerOpen(false)}
             sx={{
               py: 2,
+              backgroundColor: '#25D366',
+              color: 'white',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: '#128C7E',
               },
             }}
           >
-            <ListItemText primary="Support" />
+            <ListItemText 
+              primary="Support WhatsApp" 
+              primaryTypographyProps={{
+                sx: { 
+                  color: 'white',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }
+              }}
+            />
           </ListItem>
         </List>
       </Drawer>

@@ -1,55 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Paper,
   Typography,
-  Box,
+  TextField,
   Button,
   Grid,
+  Box,
   Avatar,
-  TextField,
-  Snackbar,
-  Alert,
+  IconButton,
+  CircularProgress,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { useNavigate } from 'react-router-dom';
-import { styled, useTheme } from '@mui/material/styles';
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  marginTop: theme.spacing(8),
-  padding: theme.spacing(3),
-  [theme.breakpoints.down('sm')]: {
-    marginTop: theme.spacing(4),
-    padding: theme.spacing(2),
-  },
-}));
+const Input = styled('input')({
+  display: 'none',
+});
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    surname: '',
     email: '',
     phone: '',
+    department: '',
+    avatar: null,
   });
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-    setUser(currentUser);
-    setFormData({
-      name: currentUser.name || '',
-      surname: currentUser.surname || '',
-      email: currentUser.email || '',
-      phone: currentUser.phone || '',
-    });
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,132 +38,148 @@ const Profile = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Mettre à jour les informations de l'utilisateur
-    const updatedUser = {
-      ...user,
-      ...formData
-    };
-
-    // Mettre à jour le localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    
-    // Mettre à jour la liste des utilisateurs
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const updatedUsers = users.map(u => 
-      u.email === user.email ? updatedUser : u
-    );
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    setSnackbarMessage('Profil mis à jour avec succès');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        avatar: file
+      }));
+    }
   };
 
-  if (!user) {
-    return null;
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Simuler une requête API
+    setTimeout(() => {
+      localStorage.setItem('user', JSON.stringify(formData));
+      setLoading(false);
+      navigate('/');
+    }, 1000);
+  };
 
   return (
-    <Container maxWidth="md">
-      <StyledPaper elevation={3}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 120,
-              height: 120,
-              fontSize: '3rem',
-              bgcolor: theme.palette.primary.main,
-              mb: 2,
-            }}
-          >
-            {user.surname?.[0]}{user.name?.[0]}
-          </Avatar>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Mon Profil
-          </Typography>
-        </Box>
+    <Container maxWidth="md" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom sx={{ 
+          color: '#1976d2', 
+          fontWeight: 'bold',
+          fontSize: { xs: '1.5rem', sm: '2rem' },
+          mb: 3
+        }}>
+          Mon Profil
+        </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ position: 'relative' }}>
+                <Avatar
+                  src={formData.avatar ? URL.createObjectURL(formData.avatar) : ''}
+                  sx={{ 
+                    width: { xs: 100, sm: 120 }, 
+                    height: { xs: 100, sm: 120 },
+                    fontSize: { xs: '2.5rem', sm: '3rem' }
+                  }}
+                >
+                  {formData.name.charAt(0).toUpperCase()}
+                </Avatar>
+                <label htmlFor="icon-button-file">
+                  <Input
+                    accept="image/*"
+                    id="icon-button-file"
+                    type="file"
+                    onChange={handleAvatarChange}
+                  />
+                  <IconButton
+                    color="primary"
+                    aria-label="upload picture"
+                    component="span"
+                    sx={{
+                      position: 'absolute',
+                      bottom: { xs: 0, sm: 8 },
+                      right: { xs: 0, sm: 8 },
+                      backgroundColor: 'white',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      },
+                    }}
+                  >
+                    <PhotoCamera />
+                  </IconButton>
+                </label>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12}>
               <TextField
-                required
                 fullWidth
-                label="Nom"
+                label="Nom complet"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
                 required
-                fullWidth
-                label="Prénom"
-                name="surname"
-                value={formData.surname}
-                onChange={handleChange}
+                sx={{ mb: 2 }}
               />
             </Grid>
+
             <Grid item xs={12}>
               <TextField
-                required
                 fullWidth
                 label="Email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled
+                required
+                sx={{ mb: 2 }}
               />
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Numéro de téléphone"
+                label="Téléphone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                required
+                sx={{ mb: 2 }}
               />
             </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Département"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                required
+                sx={{ mb: 2 }}
+              />
+            </Grid>
+
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  Retour au tableau de bord
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                >
-                  Enregistrer les modifications
-                </Button>
-              </Box>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                disabled={loading}
+                sx={{ 
+                  height: { xs: 40, sm: 48 },
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Enregistrer les modifications'}
+              </Button>
             </Grid>
           </Grid>
-        </Box>
-      </StyledPaper>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity={snackbarSeverity}
-          sx={{ width: '100%' }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        </form>
+      </Paper>
     </Container>
   );
 };

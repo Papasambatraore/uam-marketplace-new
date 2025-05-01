@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Paper,
@@ -6,243 +6,255 @@ import {
   TextField,
   Button,
   Grid,
-  MenuItem,
   Box,
-  Snackbar,
-  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  CircularProgress,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useNavigate } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
 
 const categories = [
-  { value: 'livres', label: 'Livres' },
-  { value: 'informatique', label: 'Informatique' },
-  { value: 'vetements', label: 'Vêtements' },
-  { value: 'beaute', label: 'Beauté' },
-  { value: 'accessoires', label: 'Accessoires' },
-  { value: 'services', label: 'Services' },
+  { name: 'Livres', value: 'livres', color: '#2196f3' },
+  { name: 'Informatique', value: 'informatique', color: '#4caf50' },
+  { name: 'Vêtements', value: 'vetements', color: '#f44336' },
+  { name: 'Beauté', value: 'beaute', color: '#e91e63' },
+  { name: 'Accessoires', value: 'accessoires', color: '#9c27b0' },
+  { name: 'Services', value: 'services', color: '#ff9800' },
 ];
+
+const departments = [
+  'Droit',
+  'Économie',
+  'Gestion',
+  'Lettres',
+  'Sciences',
+  'Sciences de l\'éducation',
+  'Sciences de la santé',
+  'Sciences sociales',
+];
+
+const Input = styled('input')({
+  display: 'none',
+});
 
 const CreateAd = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     category: '',
+    department: '',
     whatsapp: '',
-    image: null,
+    images: [],
   });
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
-      navigate('/register');
-    }
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-      }));
-    }
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...files]
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Validation des champs requis
-    if (!formData.title || !formData.description || !formData.price || 
-        !formData.category || !formData.whatsapp) {
-      setSnackbarMessage('Veuillez remplir tous les champs obligatoires');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    // Création de l'annonce
-    const newAd = {
-      id: Date.now(),
-      title: formData.title,
-      description: formData.description,
-      price: formData.price,
-      category: formData.category,
-      whatsapp: formData.whatsapp,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      userId: JSON.parse(localStorage.getItem('user')).id,
-    };
-
-    // Récupération des annonces existantes
-    const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
-    
-    // Ajout de la nouvelle annonce
-    const updatedAds = [...existingAds, newAd];
-    
-    // Sauvegarde dans le localStorage
-    localStorage.setItem('ads', JSON.stringify(updatedAds));
-
-    // Réinitialisation du formulaire
-    setFormData({
-      title: '',
-      description: '',
-      price: '',
-      category: '',
-      whatsapp: '',
-      image: null,
-    });
-
-    // Affichage du message de succès
-    setSnackbarMessage('Annonce publiée avec succès !');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
-
-    // Redirection vers le tableau de bord après 2 secondes
+    // Simuler une requête API
     setTimeout(() => {
-      navigate('/dashboard');
-    }, 2000);
+      const ads = JSON.parse(localStorage.getItem('ads') || '[]');
+      const newAd = {
+        id: Date.now(),
+        ...formData,
+        date: new Date().toISOString(),
+      };
+      localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
+      setLoading(false);
+      navigate('/');
+    }, 1000);
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Déposer une annonce
+    <Container maxWidth="md" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom sx={{ 
+          color: '#1976d2', 
+          fontWeight: 'bold',
+          fontSize: { xs: '1.5rem', sm: '2rem' },
+          mb: 3
+        }}>
+          Créer une nouvelle annonce
         </Typography>
+
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<CloudUploadIcon />}
-                fullWidth
-              >
-                Ajouter une photo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
-              {formData.image && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {formData.image.name}
-                </Typography>
-              )}
-            </Grid>
-
-            <Grid item xs={12}>
               <TextField
-                required
                 fullWidth
                 label="Titre de l'annonce"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                required
+                sx={{ mb: 2 }}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                required
                 fullWidth
-                multiline
-                rows={4}
                 label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                multiline
+                rows={4}
+                required
+                sx={{ mb: 2 }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
-                required
                 fullWidth
                 label="Prix (FCFA)"
                 name="price"
                 type="number"
                 value={formData.price}
                 onChange={handleChange}
+                required
+                sx={{ mb: 2 }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
-                required
-                fullWidth
-                select
-                label="Catégorie"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-              >
-                {categories.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                required
                 fullWidth
                 label="Numéro WhatsApp"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleChange}
-                placeholder="221XXXXXXXXX"
+                required
+                placeholder="Ex: 221774907982"
+                sx={{ mb: 2 }}
               />
             </Grid>
 
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  size="large"
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Catégorie</InputLabel>
+                <Select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
                 >
-                  Publier l'annonce
-                </Button>
+                  {categories.map((category) => (
+                    <MenuItem key={category.value} value={category.value}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Département</InputLabel>
+                <Select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                >
+                  {departments.map((dept) => (
+                    <MenuItem key={dept} value={dept}>
+                      {dept}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={{ mb: 2 }}>
+                <label htmlFor="contained-button-file">
+                  <Input
+                    accept="image/*"
+                    id="contained-button-file"
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
+                  <Button
+                    variant="contained"
+                    component="span"
+                    fullWidth
+                    sx={{ 
+                      height: { xs: 40, sm: 48 },
+                      fontSize: { xs: '0.8rem', sm: '1rem' }
+                    }}
+                  >
+                    Ajouter des photos
+                  </Button>
+                </label>
               </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {formData.images.map((image, index) => (
+                  <Chip
+                    key={index}
+                    label={image.name}
+                    onDelete={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        images: prev.images.filter((_, i) => i !== index)
+                      }));
+                    }}
+                    sx={{ 
+                      maxWidth: { xs: '100%', sm: '200px' },
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                disabled={loading}
+                sx={{ 
+                  height: { xs: 40, sm: 48 },
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Publier l\'annonce'}
+              </Button>
             </Grid>
           </Grid>
         </form>
       </Paper>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-      >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity={snackbarSeverity}
-          sx={{ width: '100%' }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

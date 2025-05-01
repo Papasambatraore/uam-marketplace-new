@@ -11,7 +11,6 @@ import {
   InputAdornment,
   Paper,
   Chip,
-  CardMedia,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -28,42 +27,42 @@ import { useNavigate } from 'react-router-dom';
 const categories = [
   { 
     name: 'Livres', 
-    icon: <BookIcon sx={{ fontSize: 40 }} />, 
+    icon: <BookIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'livres', 
     color: '#2196f3',
     description: 'Manuels, romans, cours'
   },
   { 
     name: 'Informatique', 
-    icon: <ComputerIcon sx={{ fontSize: 40 }} />, 
+    icon: <ComputerIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'informatique', 
     color: '#4caf50',
     description: 'Ordinateurs, accessoires'
   },
   { 
     name: 'Vêtements', 
-    icon: <ShoppingBagIcon sx={{ fontSize: 40 }} />, 
+    icon: <ShoppingBagIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'vetements', 
     color: '#f44336',
     description: 'Mode, style, tendance'
   },
   { 
     name: 'Beauté', 
-    icon: <SpaIcon sx={{ fontSize: 40 }} />, 
+    icon: <SpaIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'beaute', 
     color: '#e91e63',
     description: 'Cosmétiques, soins'
   },
   { 
     name: 'Accessoires', 
-    icon: <WatchIcon sx={{ fontSize: 40 }} />, 
+    icon: <WatchIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'accessoires', 
     color: '#9c27b0',
     description: 'Bijoux, montres, sacs'
   },
   { 
     name: 'Services', 
-    icon: <BuildIcon sx={{ fontSize: 40 }} />, 
+    icon: <BuildIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
     value: 'services', 
     color: '#ff9800',
     description: 'Cours, réparations'
@@ -89,9 +88,13 @@ const Home = () => {
   });
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h4" gutterBottom sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom sx={{ 
+          color: '#1976d2', 
+          fontWeight: 'bold',
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+        }}>
           UAM e-commerce
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
@@ -121,7 +124,7 @@ const Home = () => {
                 fullWidth
                 variant={selectedCategory === category.value ? "contained" : "outlined"}
                 sx={{
-                  height: '140px',
+                  height: { xs: '120px', sm: '140px' },
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: selectedCategory === category.value ? category.color : 'transparent',
@@ -140,12 +143,16 @@ const Home = () => {
                 <Box sx={{ mb: 1 }}>
                   {category.icon}
                 </Box>
-                <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                <Typography variant="body1" sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 0.5,
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' }
+                }}>
                   {category.name}
                 </Typography>
                 <Typography variant="caption" sx={{ 
                   opacity: selectedCategory === category.value ? 0.9 : 0.7,
-                  fontSize: '0.7rem'
+                  fontSize: { xs: '0.6rem', sm: '0.7rem' }
                 }}>
                   {category.description}
                 </Typography>
@@ -155,7 +162,12 @@ const Home = () => {
         </Grid>
       </Paper>
 
-      <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 'bold' }}>
+      <Typography variant="h5" sx={{ 
+        mb: 3, 
+        color: '#1976d2', 
+        fontWeight: 'bold',
+        fontSize: { xs: '1.2rem', sm: '1.5rem' }
+      }}>
         {filteredAds.length === 0 ? 'Aucune annonce trouvée' : 'Dernières annonces'}
       </Typography>
 
@@ -172,18 +184,28 @@ const Home = () => {
                 boxShadow: 6,
               },
             }}>
-              <CardMedia
+              <Box
                 component="img"
                 height="200"
-                image="https://via.placeholder.com/300x200"
+                src="https://via.placeholder.com/300x200"
                 alt={ad.title}
-                sx={{ objectFit: 'cover' }}
+                sx={{ 
+                  objectFit: 'cover',
+                  width: '100%'
+                }}
               />
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                <Typography gutterBottom variant="h6" component="div" sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.1rem' }
+                }}>
                   {ad.title}
                 </Typography>
-                <Typography variant="h5" color="primary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                <Typography variant="h5" color="primary" sx={{ 
+                  mb: 2, 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.2rem', sm: '1.4rem' }
+                }}>
                   {ad.price} FCFA
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
