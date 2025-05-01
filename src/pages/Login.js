@@ -5,16 +5,32 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   Box,
   Snackbar,
   Alert,
-  Link,
+  Grid,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  marginTop: theme.spacing(8),
+  padding: theme.spacing(3),
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    marginTop: theme.spacing(4),
+    padding: theme.spacing(2),
+  },
+}));
 
 const Login = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -51,10 +67,11 @@ const Login = () => {
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
 
-      // Redirection vers la page d'accueil après 2 secondes
+      // Redirection vers le tableau de bord après 1 seconde
       setTimeout(() => {
-        navigate('/');
-      }, 2000);
+        navigate('/dashboard');
+        window.location.reload();
+      }, 1000);
     } else {
       setSnackbarMessage('Email ou mot de passe incorrect');
       setSnackbarSeverity('error');
@@ -63,67 +80,104 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom align="center" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+      <StyledPaper elevation={3}>
+        <Typography 
+          component="h1" 
+          variant="h4" 
+          gutterBottom 
+          align="center"
+          sx={{ 
+            color: theme.palette.primary.main,
+            fontWeight: 'bold',
+            [theme.breakpoints.down('sm')]: {
+              fontSize: '1.75rem',
+            },
+          }}
+        >
           Connexion
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary" align="center" sx={{ mb: 3 }}>
-          Connectez-vous pour publier des annonces
+        <Typography 
+          variant="subtitle1" 
+          color="text.secondary" 
+          align="center" 
+          sx={{ mb: 3 }}
+        >
+          Connectez-vous pour accéder à votre compte
         </Typography>
 
-        <form onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <TextField
+            required
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            margin="normal"
+            autoComplete="email"
+            autoFocus
+          />
+          <TextField
+            required
+            fullWidth
+            label="Mot de passe"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            margin="normal"
+            autoComplete="current-password"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Se connecter
+          </Button>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                required
+            <Grid item xs={12} sm={6}>
+              <Button
                 fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
+                variant="text"
+                onClick={() => navigate('/register')}
+                sx={{ 
+                  textTransform: 'none',
+                  [theme.breakpoints.down('sm')]: {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              >
+                Créer un compte
+              </Button>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                required
+            <Grid item xs={12} sm={6}>
+              <Button
                 fullWidth
-                label="Mot de passe"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                >
-                  Se connecter
-                </Button>
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" align="center">
-                Pas encore inscrit ?{' '}
-                <Link component={RouterLink} to="/register">
-                  Créez un compte
-                </Link>
-              </Typography>
+                variant="text"
+                onClick={() => navigate('/forgot-password')}
+                sx={{ 
+                  textTransform: 'none',
+                  [theme.breakpoints.down('sm')]: {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              >
+                Mot de passe oublié ?
+              </Button>
             </Grid>
           </Grid>
-        </form>
-      </Paper>
+        </Box>
+      </StyledPaper>
 
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setOpenSnackbar(false)}

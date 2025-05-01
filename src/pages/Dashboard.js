@@ -17,9 +17,12 @@ import {
   Chip,
   Snackbar,
   Alert,
+  IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import EditIcon from '@mui/icons-material/Edit';
+import LockIcon from '@mui/icons-material/Lock';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -90,13 +93,25 @@ const Dashboard = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" component="h1">
+          Bonjour {user?.surname} {user?.name}
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<LockIcon />}
+          onClick={() => navigate('/change-password')}
+        >
+          Changer le mot de passe
+        </Button>
+      </Box>
       <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           Mon tableau de bord
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
-          {user && `Bienvenue ${user.prenom} ${user.nom}`}
+          {user && `Bienvenue ${user.surname} ${user.name}`}
         </Typography>
         <Button
           variant="contained"
