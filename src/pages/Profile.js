@@ -11,7 +11,6 @@ import {
   Snackbar,
   Alert,
   useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
