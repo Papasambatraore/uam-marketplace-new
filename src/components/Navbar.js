@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import PhoneIcon from '@mui/icons-material/Phone';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 
@@ -129,6 +130,17 @@ const Navbar = () => {
                 <ListItem button onClick={() => navigate('/ads')}>
                   <ListItemText primary="Annonces" />
                 </ListItem>
+                <ListItem 
+                  component="a" 
+                  href="https://wa.me/221774907982" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ListItemIcon>
+                    <PhoneIcon sx={{ color: 'white' }} />
+                  </ListItemIcon>
+                  <ListItemText primary="Support: +221 77 490 79 82" />
+                </ListItem>
                 {user ? (
                   <>
                     <ListItem button onClick={() => navigate('/dashboard')}>
@@ -158,6 +170,15 @@ const Navbar = () => {
             </StyledButton>
             <StyledButton onClick={() => navigate('/ads')}>
               Annonces
+            </StyledButton>
+            <StyledButton
+              component="a"
+              href="https://wa.me/221774907982"
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<PhoneIcon />}
+            >
+              Support: +221 77 490 79 82
             </StyledButton>
             {user ? (
               <>
