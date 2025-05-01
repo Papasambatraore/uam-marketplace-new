@@ -30,7 +30,6 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 const Login = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [formData, setFormData] = useState({
     email: '',
     password: '',
