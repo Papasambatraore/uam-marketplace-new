@@ -1,246 +1,254 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Paper,
   Typography,
   TextField,
   Button,
+  Box,
   Grid,
   MenuItem,
-  Box,
+  Chip,
+  useTheme,
   Snackbar,
   Alert,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
-const categories = [
-  { value: 'livres', label: 'Livres' },
-  { value: 'informatique', label: 'Informatique' },
-  { value: 'vetements', label: 'Vêtements' },
-  { value: 'beaute', label: 'Beauté' },
-  { value: 'accessoires', label: 'Accessoires' },
-  { value: 'services', label: 'Services' },
-];
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  marginTop: theme.spacing(4),
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  color: 'white',
+  borderRadius: theme.shape.borderRadius * 2,
+  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: 'white',
+    borderRadius: theme.shape.borderRadius,
+    '& fieldset': {
+      borderColor: 'rgba(255,255,255,0.3)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'white',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: 'white',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'white',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'white',
+  },
+}));
 
 const CreateAd = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     category: '',
+    department: '',
     whatsapp: '',
-    image: null,
+    image: '',
   });
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
-      navigate('/register');
-    }
-  }, [navigate]);
+  const categories = [
+    { value: 'livres', label: 'Livres' },
+    { value: 'informatique', label: 'Informatique' },
+    { value: 'vetements', label: 'Vêtements' },
+    { value: 'beaute', label: 'Beauté' },
+    { value: 'accessoires', label: 'Accessoires' },
+    { value: 'services', label: 'Services' },
+  ];
+
+  const departments = [
+    'Droit',
+    'Économie',
+    'Lettres',
+    'Sciences',
+    'Médecine',
+    'Ingénierie',
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-      }));
-    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Validation des champs requis
-    if (!formData.title || !formData.description || !formData.price || 
-        !formData.category || !formData.whatsapp) {
-      setSnackbarMessage('Veuillez remplir tous les champs obligatoires');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    // Création de l'annonce
+    const ads = JSON.parse(localStorage.getItem('ads') || '[]');
     const newAd = {
+      ...formData,
       id: Date.now(),
-      title: formData.title,
-      description: formData.description,
-      price: formData.price,
-      category: formData.category,
-      whatsapp: formData.whatsapp,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      userId: JSON.parse(localStorage.getItem('user')).id,
+      date: new Date().toISOString(),
     };
-
-    // Récupération des annonces existantes
-    const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
-    
-    // Ajout de la nouvelle annonce
-    const updatedAds = [...existingAds, newAd];
-    
-    // Sauvegarde dans le localStorage
-    localStorage.setItem('ads', JSON.stringify(updatedAds));
-
-    // Réinitialisation du formulaire
-    setFormData({
-      title: '',
-      description: '',
-      price: '',
-      category: '',
-      whatsapp: '',
-      image: null,
+    localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
+    setSnackbar({
+      open: true,
+      message: 'Annonce créée avec succès !',
+      severity: 'success'
     });
-
-    // Affichage du message de succès
-    setSnackbarMessage('Annonce publiée avec succès !');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
-
-    // Redirection vers le tableau de bord après 2 secondes
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 2000);
+    setTimeout(() => navigate('/ads'), 2000);
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Déposer une annonce
+    <Container maxWidth="md">
+      <StyledPaper>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
+          Créer une nouvelle annonce
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<CloudUploadIcon />}
-                fullWidth
-              >
-                Ajouter une photo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
-              {formData.image && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {formData.image.name}
-                </Typography>
-              )}
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 label="Titre de l'annonce"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                required
               />
             </Grid>
-
             <Grid item xs={12}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
-                multiline
-                rows={4}
                 label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                multiline
+                rows={4}
+                required
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 label="Prix (FCFA)"
                 name="price"
                 type="number"
                 value={formData.price}
                 onChange={handleChange}
+                required
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 select
                 label="Catégorie"
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
+                required
               >
                 {categories.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </StyledTextField>
             </Grid>
-
-            <Grid item xs={12}>
-              <TextField
+            <Grid item xs={12} sm={6}>
+              <StyledTextField
+                fullWidth
+                select
+                label="Département"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
                 required
+              >
+                {departments.map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
+              </StyledTextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <StyledTextField
                 fullWidth
                 label="Numéro WhatsApp"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleChange}
-                placeholder="221XXXXXXXXX"
+                required
               />
             </Grid>
-
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                >
-                  Publier l'annonce
-                </Button>
-              </Box>
+              <StyledTextField
+                fullWidth
+                label="URL de l'image"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+              />
             </Grid>
           </Grid>
+          <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/ads')}
+              sx={{
+                color: 'white',
+                borderColor: 'white',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                },
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                backgroundColor: 'white',
+                color: '#2196F3',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                  transform: 'scale(1.05)',
+                },
+                transition: 'all 0.3s ease-in-out',
+              }}
+            >
+              Publier l'annonce
+            </Button>
+          </Box>
         </form>
-      </Paper>
-
+      </StyledPaper>
       <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
         <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity={snackbarSeverity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
-          {snackbarMessage}
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>

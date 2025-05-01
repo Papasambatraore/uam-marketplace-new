@@ -20,6 +20,9 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  color: 'white',
+  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
   [theme.breakpoints.down('sm')]: {
     marginTop: theme.spacing(4),
     padding: theme.spacing(2),
@@ -86,7 +89,6 @@ const Login = () => {
           gutterBottom 
           align="center"
           sx={{ 
-            color: theme.palette.primary.main,
             fontWeight: 'bold',
             [theme.breakpoints.down('sm')]: {
               fontSize: '1.75rem',
@@ -97,9 +99,8 @@ const Login = () => {
         </Typography>
         <Typography 
           variant="subtitle1" 
-          color="text.secondary" 
           align="center" 
-          sx={{ mb: 3 }}
+          sx={{ mb: 3, opacity: 0.9 }}
         >
           Connectez-vous pour accéder à votre compte
         </Typography>
@@ -116,6 +117,12 @@ const Login = () => {
             margin="normal"
             autoComplete="email"
             autoFocus
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'white',
+                borderRadius: '4px',
+              },
+            }}
           />
           <TextField
             required
@@ -127,12 +134,26 @@ const Login = () => {
             onChange={handleChange}
             margin="normal"
             autoComplete="current-password"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'white',
+                borderRadius: '4px',
+              },
+            }}
           />
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ 
+              mt: 3, 
+              mb: 2,
+              backgroundColor: 'white',
+              color: '#2196F3',
+              '&:hover': {
+                backgroundColor: '#f5f5f5',
+              },
+            }}
           >
             Se connecter
           </Button>
@@ -144,6 +165,10 @@ const Login = () => {
                 onClick={() => navigate('/register')}
                 sx={{ 
                   textTransform: 'none',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
                   [theme.breakpoints.down('sm')]: {
                     fontSize: '0.875rem',
                   },
@@ -159,6 +184,10 @@ const Login = () => {
                 onClick={() => navigate('/forgot-password')}
                 sx={{ 
                   textTransform: 'none',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
                   [theme.breakpoints.down('sm')]: {
                     fontSize: '0.875rem',
                   },

@@ -3,59 +3,101 @@ import {
   Container,
   Paper,
   Typography,
-  Box,
+  TextField,
   Button,
+  Box,
   Grid,
   Avatar,
-  TextField,
+  Chip,
+  useTheme,
   Snackbar,
   Alert,
-  useTheme,
+  MenuItem,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  marginTop: theme.spacing(8),
-  padding: theme.spacing(3),
+  padding: theme.spacing(4),
+  marginTop: theme.spacing(4),
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  color: 'white',
+  borderRadius: theme.shape.borderRadius * 2,
+  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+  transition: 'all 0.3s ease-in-out',
   [theme.breakpoints.down('sm')]: {
-    marginTop: theme.spacing(4),
     padding: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  },
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: 'white',
+    borderRadius: theme.shape.borderRadius,
+    '& fieldset': {
+      borderColor: 'rgba(255,255,255,0.3)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'white',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: 'white',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'white',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: 'white',
   },
 }));
 
 const Profile = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({
+  const [user, setUser] = useState({
     name: '',
     surname: '',
     email: '',
     phone: '',
+    department: '',
+    level: '',
   });
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser) {
-      navigate('/login');
-      return;
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser) {
+      setUser(storedUser);
     }
-    setUser(currentUser);
-    setFormData({
-      name: currentUser.name || '',
-      surname: currentUser.surname || '',
-      email: currentUser.email || '',
-      phone: currentUser.phone || '',
-    });
-  }, [navigate]);
+  }, []);
+
+  const departments = [
+    'Droit',
+    'Économie',
+    'Lettres',
+    'Sciences',
+    'Médecine',
+    'Ingénierie',
+  ];
+
+  const levels = [
+    'L1',
+    'L2',
+    'L3',
+    'M1',
+    'M2',
+    'Doctorat',
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setUser(prev => ({
       ...prev,
       [name]: value
     }));
@@ -63,128 +105,187 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Mettre à jour les informations de l'utilisateur
-    const updatedUser = {
-      ...user,
-      ...formData
-    };
-
-    // Mettre à jour le localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    
-    // Mettre à jour la liste des utilisateurs
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const updatedUsers = users.map(u => 
-      u.email === user.email ? updatedUser : u
-    );
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    setSnackbarMessage('Profil mis à jour avec succès');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
+    localStorage.setItem('user', JSON.stringify(user));
+    setSnackbar({
+      open: true,
+      message: 'Profil mis à jour avec succès !',
+      severity: 'success'
+    });
   };
 
-  if (!user) {
-    return null;
-  }
-
   return (
-    <Container maxWidth="md">
-      <StyledPaper elevation={3}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 } }}>
+      <StyledPaper>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          mb: 4,
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
           <Avatar
             sx={{
-              width: 120,
-              height: 120,
-              fontSize: '3rem',
-              bgcolor: theme.palette.primary.main,
-              mb: 2,
+              width: { xs: 80, sm: 100 },
+              height: { xs: 80, sm: 100 },
+              fontSize: { xs: '2rem', sm: '2.5rem' },
+              backgroundColor: 'white',
+              color: '#2196F3',
+              marginRight: { xs: 0, sm: 2 },
+              marginBottom: { xs: 2, sm: 0 },
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'scale(1.1)',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+              },
             }}
           >
-            {user.surname?.[0]}{user.name?.[0]}
+            {user.name?.[0]}{user.surname?.[0]}
           </Avatar>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Mon Profil
-          </Typography>
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ 
+              fontWeight: 'bold',
+              fontSize: { xs: '1.5rem', sm: '2rem' }
+            }}>
+              {user.name} {user.surname}
+            </Typography>
+            <Typography variant="subtitle1" sx={{ 
+              opacity: 0.9,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}>
+              {user.email}
+            </Typography>
+          </Box>
         </Box>
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 label="Nom"
                 name="name"
-                value={formData.name}
+                value={user.name}
                 onChange={handleChange}
+                required
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 label="Prénom"
                 name="surname"
-                value={formData.surname}
+                value={user.surname}
                 onChange={handleChange}
+                required
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                required
+              <StyledTextField
                 fullWidth
                 label="Email"
                 name="email"
                 type="email"
-                value={formData.email}
+                value={user.email}
                 onChange={handleChange}
-                disabled
+                required
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
+            <Grid item xs={12} sm={6}>
+              <StyledTextField
                 fullWidth
-                label="Numéro de téléphone"
+                label="Téléphone"
                 name="phone"
-                value={formData.phone}
+                value={user.phone}
                 onChange={handleChange}
+                required
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <StyledTextField
+                fullWidth
+                select
+                label="Département"
+                name="department"
+                value={user.department}
+                onChange={handleChange}
+                required
+              >
+                {departments.map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
+              </StyledTextField>
+            </Grid>
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  Retour au tableau de bord
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                >
-                  Enregistrer les modifications
-                </Button>
-              </Box>
+              <StyledTextField
+                fullWidth
+                select
+                label="Niveau"
+                name="level"
+                value={user.level}
+                onChange={handleChange}
+                required
+              >
+                {levels.map((level) => (
+                  <MenuItem key={level} value={level}>
+                    {level}
+                  </MenuItem>
+                ))}
+              </StyledTextField>
             </Grid>
           </Grid>
-        </Box>
+          <Box sx={{ 
+            mt: 4, 
+            display: 'flex', 
+            gap: 2, 
+            justifyContent: 'flex-end',
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                color: 'white',
+                borderColor: 'white',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                },
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                backgroundColor: 'white',
+                color: '#2196F3',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                  transform: 'scale(1.05)',
+                },
+                transition: 'all 0.3s ease-in-out',
+              }}
+            >
+              Enregistrer les modifications
+            </Button>
+          </Box>
+        </form>
       </StyledPaper>
-
       <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
         <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity={snackbarSeverity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
-          {snackbarMessage}
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
