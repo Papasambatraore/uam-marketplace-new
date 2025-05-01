@@ -100,6 +100,7 @@ function Register() {
           message: 'Un utilisateur avec cet email existe déjà',
           severity: 'error'
         });
+        setLoading(false);
         return;
       }
 
@@ -114,22 +115,6 @@ function Register() {
         createdAt: new Date().toISOString(),
         isVerified: true
       };
-
-      // Envoyer l'email de bienvenue
-      const welcomeResponse = await fetch('http://localhost:5000/api/send-welcome-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: `${formData.name} ${formData.surname}`,
-          email: formData.email
-        })
-      });
-
-      if (!welcomeResponse.ok) {
-        throw new Error('Erreur lors de l\'envoi de l\'email de bienvenue');
-      }
 
       // Sauvegarder l'utilisateur
       localStorage.setItem('users', JSON.stringify([...existingUsers, newUser]));
