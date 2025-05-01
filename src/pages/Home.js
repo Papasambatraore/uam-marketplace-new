@@ -1,251 +1,223 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
-  Typography,
-  Box,
   Grid,
   Card,
   CardContent,
+  Typography,
+  Box,
   Button,
-  useTheme,
-  useMediaQuery,
-  IconButton,
+  TextField,
+  InputAdornment,
+  Paper,
+  Chip,
 } from '@mui/material';
-import PhoneIcon from '@mui/icons-material/Phone';
-import { styled } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CategoryIcon from '@mui/icons-material/Category';
+import BookIcon from '@mui/icons-material/Book';
+import ComputerIcon from '@mui/icons-material/Computer';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import SpaIcon from '@mui/icons-material/Spa';
+import WatchIcon from '@mui/icons-material/Watch';
+import BuildIcon from '@mui/icons-material/Build';
 import { useNavigate } from 'react-router-dom';
 
-const HeroSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-  color: 'white',
-  padding: theme.spacing(8, 0),
-  marginBottom: theme.spacing(4),
-  position: 'relative',
-  overflow: 'hidden',
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(4, 0),
+const categories = [
+  { 
+    name: 'Livres', 
+    icon: <BookIcon sx={{ fontSize: 40 }} />, 
+    value: 'livres', 
+    color: '#2196f3',
+    description: 'Manuels, romans, cours'
   },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%)',
-    animation: 'pulse 4s infinite',
+  { 
+    name: 'Informatique', 
+    icon: <ComputerIcon sx={{ fontSize: 40 }} />, 
+    value: 'informatique', 
+    color: '#4caf50',
+    description: 'Ordinateurs, accessoires'
   },
-  '@keyframes pulse': {
-    '0%': { transform: 'scale(1)' },
-    '50%': { transform: 'scale(1.1)' },
-    '100%': { transform: 'scale(1)' },
+  { 
+    name: 'Vêtements', 
+    icon: <ShoppingBagIcon sx={{ fontSize: 40 }} />, 
+    value: 'vetements', 
+    color: '#f44336',
+    description: 'Mode, style, tendance'
   },
-}));
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-10px)',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+  { 
+    name: 'Beauté', 
+    icon: <SpaIcon sx={{ fontSize: 40 }} />, 
+    value: 'beaute', 
+    color: '#e91e63',
+    description: 'Cosmétiques, soins'
   },
-  [theme.breakpoints.down('sm')]: {
-    marginBottom: theme.spacing(2),
+  { 
+    name: 'Accessoires', 
+    icon: <WatchIcon sx={{ fontSize: 40 }} />, 
+    value: 'accessoires', 
+    color: '#9c27b0',
+    description: 'Bijoux, montres, sacs'
   },
-}));
-
-const SupportSection = styled(Box)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #4caf50 30%, #45a049 90%)',
-  color: 'white',
-  padding: theme.spacing(4),
-  borderRadius: theme.shape.borderRadius * 2,
-  marginTop: theme.spacing(4),
-  textAlign: 'center',
-  cursor: 'pointer',
-  transition: 'all 0.3s ease-in-out',
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
+  { 
+    name: 'Services', 
+    icon: <BuildIcon sx={{ fontSize: 40 }} />, 
+    value: 'services', 
+    color: '#ff9800',
+    description: 'Cours, réparations'
   },
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-  },
-}));
+];
 
 const Home = () => {
-  const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [ads, setAds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const categories = [
-    { name: 'Livres', color: '#4caf50', icon: '📚' },
-    { name: 'Informatique', color: '#2196f3', icon: '💻' },
-    { name: 'Vêtements', color: '#f44336', icon: '👕' },
-    { name: 'Beauté', color: '#e91e63', icon: '💄' },
-    { name: 'Accessoires', color: '#9c27b0', icon: '👜' },
-    { name: 'Services', color: '#ff9800', icon: '🔧' },
-  ];
+  useEffect(() => {
+    // Chargement des annonces depuis le localStorage
+    const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+    setAds(storedAds);
+  }, []);
+
+  const filteredAds = ads.filter(ad => {
+    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || ad.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <Box>
-      <HeroSection>
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            textAlign: 'center',
-            position: 'relative',
-            zIndex: 1,
-          }}>
-            <Typography 
-              variant="h2" 
-              component="h1" 
-              gutterBottom
-              sx={{ 
-                fontWeight: 'bold',
-                fontSize: { xs: '2rem', sm: '3rem', md: '4rem' },
-                mb: { xs: 2, sm: 3 },
-                animation: 'fadeIn 1s ease-in',
-              }}
-            >
-              Bienvenue sur UAM Marketplace
-            </Typography>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                mb: { xs: 3, sm: 4 },
-                opacity: 0.9,
-                fontSize: { xs: '1rem', sm: '1.25rem' },
-                animation: 'fadeIn 1s ease-in 0.5s',
-              }}
-            >
-              Découvrez, achetez et vendez des produits et services entre étudiants
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/ads')}
-              sx={{
-                backgroundColor: 'white',
-                color: '#2196F3',
-                fontSize: { xs: '1rem', sm: '1.25rem' },
-                padding: { xs: '8px 16px', sm: '12px 24px' },
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                  transform: 'scale(1.05)',
-                },
-                transition: 'all 0.3s ease-in-out',
-                animation: 'fadeIn 1s ease-in 1s',
-              }}
-            >
-              Explorer les annonces
-            </Button>
-          </Box>
-        </Container>
-      </HeroSection>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
-        <Typography 
-          variant="h4" 
-          component="h2" 
-          gutterBottom 
-          sx={{ 
-            textAlign: 'center',
-            mb: { xs: 3, sm: 4 },
-            fontSize: { xs: '1.5rem', sm: '2rem' },
-          }}
-        >
-          Catégories populaires
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+          UAM e-commerce
         </Typography>
-        <Grid container spacing={3}>
-          {categories.map((category, index) => (
-            <Grid item xs={12} sm={6} md={4} key={category.name}>
-              <StyledCard
+        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
+          La place de marché des étudiants de l'UAM
+        </Typography>
+        
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Rechercher un produit/service"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 3 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="primary" />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <Grid container spacing={2}>
+          {categories.map((category) => (
+            <Grid item xs={6} sm={4} md={2} key={category.value}>
+              <Button
+                fullWidth
+                variant={selectedCategory === category.value ? "contained" : "outlined"}
                 sx={{
-                  animation: `fadeIn 0.5s ease-in ${index * 0.1}s`,
-                }}
-              >
-                <CardContent sx={{ 
-                  flexGrow: 1,
+                  height: '140px',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  padding: { xs: 2, sm: 3 },
+                  backgroundColor: selectedCategory === category.value ? category.color : 'transparent',
+                  color: selectedCategory === category.value ? 'white' : category.color,
+                  borderColor: category.color,
+                  '&:hover': {
+                    backgroundColor: category.color,
+                    color: 'white',
+                    borderColor: category.color,
+                  },
+                }}
+                onClick={() => setSelectedCategory(
+                  selectedCategory === category.value ? null : category.value
+                )}
+              >
+                <Box sx={{ mb: 1 }}>
+                  {category.icon}
+                </Box>
+                <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  {category.name}
+                </Typography>
+                <Typography variant="caption" sx={{ 
+                  opacity: selectedCategory === category.value ? 0.9 : 0.7,
+                  fontSize: '0.7rem'
                 }}>
-                  <Typography 
-                    variant="h1" 
-                    sx={{ 
-                      fontSize: { xs: '3rem', sm: '4rem' },
-                      mb: 2,
-                    }}
-                  >
-                    {category.icon}
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    component="h3" 
-                    sx={{ 
-                      mb: 2,
-                      color: category.color,
-                      fontWeight: 'bold',
-                      fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                    }}
-                  >
-                    {category.name}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    onClick={() => navigate(`/ads?category=${category.name.toLowerCase()}`)}
-                    sx={{
-                      borderColor: category.color,
-                      color: category.color,
-                      '&:hover': {
-                        backgroundColor: category.color,
-                        color: 'white',
-                        transform: 'scale(1.05)',
-                      },
-                      transition: 'all 0.3s ease-in-out',
-                      mt: 'auto',
-                    }}
-                  >
-                    Voir plus
-                  </Button>
-                </CardContent>
-              </StyledCard>
+                  {category.description}
+                </Typography>
+              </Button>
             </Grid>
           ))}
         </Grid>
+      </Paper>
 
-        <SupportSection
-          component="a"
-          href="https://wa.me/221774907982"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              mb: 2,
-              fontWeight: 'bold',
-              fontSize: { xs: '1.25rem', sm: '1.5rem' },
-            }}
-          >
-            Support
-          </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              mt: 2,
-              opacity: 0.9,
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-            }}
-          >
-            Cliquez ici pour contacter notre équipe de support
-          </Typography>
-        </SupportSection>
-      </Container>
-    </Box>
+      <Typography variant="h5" sx={{ mb: 3, color: '#1976d2', fontWeight: 'bold' }}>
+        {filteredAds.length === 0 ? 'Aucune annonce trouvée' : 'Dernières annonces'}
+      </Typography>
+
+      <Grid container spacing={3}>
+        {filteredAds.map((ad) => (
+          <Grid item xs={12} sm={6} md={4} key={ad.id}>
+            <Card sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'transform 0.2s',
+              '&:hover': {
+                transform: 'scale(1.02)',
+                boxShadow: 6,
+              },
+            }}>
+              <CardMedia
+                component="img"
+                height="200"
+                image="https://via.placeholder.com/300x200"
+                alt={ad.title}
+                sx={{ objectFit: 'cover' }}
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                  {ad.title}
+                </Typography>
+                <Typography variant="h5" color="primary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  {ad.price} FCFA
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                  <Chip
+                    icon={<LocationOnIcon />}
+                    label={ad.department}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                  <Chip
+                    icon={<CategoryIcon />}
+                    label={categories.find(c => c.value === ad.category)?.name}
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<WhatsAppIcon />}
+                  fullWidth
+                  href={`https://wa.me/${ad.whatsapp}`}
+                  target="_blank"
+                  sx={{ mt: 'auto' }}
+                >
+                  Contacter sur WhatsApp
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
   );
 };
 

@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Paper, Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   marginTop: theme.spacing(8),
@@ -10,7 +12,21 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
 }));
 
-function EditAd() {
+const EditAd = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+    whatsapp: '',
+    image: '',
+  });
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
   return (
     <Container component="main" maxWidth="xs">
       <StyledPaper elevation={3}>

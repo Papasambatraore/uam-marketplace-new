@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Vérifier si l'utilisateur est connecté
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const currentUser = JSON.parse(localStorage.getItem('user'));
     
@@ -42,6 +43,8 @@ const Dashboard = () => {
     }
 
     setUser(currentUser);
+
+    // Charger les annonces de l'utilisateur
     const allAds = JSON.parse(localStorage.getItem('ads') || '[]');
     const userAds = allAds.filter(ad => ad.userId === currentUser.id);
     setAds(userAds);
@@ -54,9 +57,11 @@ const Dashboard = () => {
 
   const handleConfirmDelete = () => {
     if (selectedAd) {
+      // Filtrer les annonces pour enlever celle à supprimer
       const updatedAds = ads.filter(ad => ad.id !== selectedAd.id);
       setAds(updatedAds);
       
+      // Mettre à jour le localStorage
       const allAds = JSON.parse(localStorage.getItem('ads') || '[]');
       const updatedAllAds = allAds.filter(ad => ad.id !== selectedAd.id);
       localStorage.setItem('ads', JSON.stringify(updatedAllAds));
@@ -87,87 +92,45 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        mb: 4,
-        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-        padding: '20px',
-        borderRadius: '8px',
-        color: 'white',
-        boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-      }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" component="h1">
           Bonjour {user?.surname} {user?.name}
         </Typography>
         <Button
           variant="contained"
           startIcon={<LockIcon />}
           onClick={() => navigate('/change-password')}
-          sx={{
-            backgroundColor: 'white',
-            color: '#2196F3',
-            '&:hover': {
-              backgroundColor: '#f5f5f5',
-            },
-          }}
         >
           Changer le mot de passe
         </Button>
       </Box>
-
-      <Paper elevation={3} sx={{ 
-        p: 4, 
-        mb: 4,
-        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-        color: 'white',
-        boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
-      }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+      <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
           Mon tableau de bord
         </Typography>
-        <Typography variant="subtitle1" sx={{ mb: 3, opacity: 0.9 }}>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
           {user && `Bienvenue ${user.surname} ${user.name}`}
         </Typography>
         <Button
           variant="contained"
+          color="primary"
           onClick={() => navigate('/create-ad')}
-          sx={{ 
-            mb: 3,
-            backgroundColor: 'white',
-            color: '#FE6B8B',
-            '&:hover': {
-              backgroundColor: '#f5f5f5',
-            },
-          }}
+          sx={{ mb: 3 }}
         >
           Publier une nouvelle annonce
         </Button>
       </Paper>
 
       {ads.length === 0 ? (
-        <Paper elevation={3} sx={{ 
-          p: 4, 
-          textAlign: 'center',
-          background: 'linear-gradient(45deg, #4CAF50 30%, #81C784 90%)',
-          color: 'white',
-          boxShadow: '0 3px 5px 2px rgba(76, 175, 80, .3)',
-        }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
+        <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary">
             Vous n'avez pas encore publié d'annonces
           </Typography>
           <Button
             variant="contained"
+            color="primary"
             onClick={() => navigate('/create-ad')}
-            sx={{ 
-              mt: 2,
-              backgroundColor: 'white',
-              color: '#4CAF50',
-              '&:hover': {
-                backgroundColor: '#f5f5f5',
-              },
-            }}
+            sx={{ mt: 2 }}
           >
             Publier votre première annonce
           </Button>
@@ -176,24 +139,15 @@ const Dashboard = () => {
         <Grid container spacing={3}>
           {ads.map((ad) => (
             <Grid item xs={12} sm={6} md={4} key={ad.id}>
-              <Card sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                },
-              }}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardMedia
                   component="img"
                   height="200"
                   image={ad.image || 'https://via.placeholder.com/300x200'}
                   alt={ad.title}
-                  sx={{ objectFit: 'cover' }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                  <Typography gutterBottom variant="h5" component="div">
                     {ad.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -205,14 +159,12 @@ const Dashboard = () => {
                       sx={{
                         backgroundColor: getCategoryColor(ad.category),
                         color: 'white',
-                        fontWeight: 'bold',
                       }}
                     />
                     <Chip
                       label={`${ad.price} FCFA`}
                       color="primary"
                       variant="outlined"
-                      sx={{ fontWeight: 'bold' }}
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
@@ -224,14 +176,7 @@ const Dashboard = () => {
                     size="small"
                     startIcon={<WhatsAppIcon />}
                     onClick={() => handleWhatsAppClick(ad.whatsapp)}
-                    sx={{ 
-                      flexGrow: 1,
-                      backgroundColor: '#25D366',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: '#128C7E',
-                      },
-                    }}
+                    sx={{ flexGrow: 1 }}
                   >
                     Contacter
                   </Button>
@@ -240,13 +185,6 @@ const Dashboard = () => {
                     startIcon={<DeleteIcon />}
                     color="error"
                     onClick={() => handleDeleteClick(ad)}
-                    sx={{ 
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: '#d32f2f',
-                      },
-                    }}
                   >
                     Supprimer
                   </Button>
