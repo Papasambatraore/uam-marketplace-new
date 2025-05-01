@@ -22,7 +22,6 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import SpaIcon from '@mui/icons-material/Spa';
 import WatchIcon from '@mui/icons-material/Watch';
 import BuildIcon from '@mui/icons-material/Build';
-import { useNavigate } from 'react-router-dom';
 
 const categories = [
   { 

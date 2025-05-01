@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Container,
   Paper,
   Typography,
   Box,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 
 const EditAd = () => {
-  const navigate = useNavigate();
-
   return (
     <Container maxWidth="md">
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
