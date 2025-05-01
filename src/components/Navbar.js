@@ -13,6 +13,7 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
+  Divider,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';

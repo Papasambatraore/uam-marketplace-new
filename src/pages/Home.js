@@ -11,6 +11,7 @@ import {
   InputAdornment,
   Paper,
   Chip,
+  CardMedia,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
