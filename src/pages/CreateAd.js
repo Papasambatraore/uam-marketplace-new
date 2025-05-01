@@ -65,9 +65,9 @@ const CreateAd = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData(prev => ({
-      ...prev,
+        ...prev,
       images: [...prev.images, ...files]
-    }));
+      }));
   };
 
   const handleSubmit = (e) => {
@@ -238,10 +238,10 @@ const CreateAd = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
                 fullWidth
                 disabled={loading}
                 sx={{ 
@@ -250,7 +250,7 @@ const CreateAd = () => {
                 }}
               >
                 {loading ? <CircularProgress size={24} /> : 'Publier l\'annonce'}
-              </Button>
+                </Button>
             </Grid>
           </Grid>
         </form>

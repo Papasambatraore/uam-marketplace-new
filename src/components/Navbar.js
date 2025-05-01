@@ -188,19 +188,19 @@ const Navbar = () => {
         )}
       </Toolbar>
 
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            width: '100%',
-            maxWidth: 300,
+    <Drawer
+      anchor="right"
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+      PaperProps={{
+        sx: {
+          width: '100%',
+          maxWidth: 300,
             backgroundColor: '#1976d2',
-            color: 'white',
-          },
-        }}
-      >
+          color: 'white',
+        },
+      }}
+    >
         <Box sx={{ 
           p: 2, 
           display: 'flex', 
@@ -208,11 +208,11 @@ const Navbar = () => {
           gap: 2,
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}>
-          {isLoggedIn ? (
-            <>
-              <Avatar sx={{ bgcolor: 'secondary.main' }}>
+        {isLoggedIn ? (
+          <>
+            <Avatar sx={{ bgcolor: 'secondary.main' }}>
                 {user?.surname?.[0]}{user?.name?.[0]}
-              </Avatar>
+            </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography 
                   variant="subtitle1" 
@@ -224,7 +224,7 @@ const Navbar = () => {
                   }}
                 >
                   {user?.surname} {user?.name}
-                </Typography>
+              </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
@@ -234,35 +234,35 @@ const Navbar = () => {
                     textOverflow: 'ellipsis'
                   }}
                 >
-                  {user?.email}
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-              <AccountCircleIcon sx={{ fontSize: 40 }} />
-              <Typography variant="subtitle1">Invité</Typography>
+                {user?.email}
+              </Typography>
             </Box>
-          )}
-        </Box>
+          </>
+        ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+            <AccountCircleIcon sx={{ fontSize: 40 }} />
+            <Typography variant="subtitle1">Invité</Typography>
+          </Box>
+        )}
+      </Box>
 
-        <List sx={{ py: 0 }}>
-          {menuItems.map((item) => (
-            <ListItem
-              key={item.text}
-              button
+      <List sx={{ py: 0 }}>
+        {menuItems.map((item) => (
+          <ListItem
+            key={item.text}
+            button
               component={RouterLink}
-              to={item.path}
-              onClick={() => setDrawerOpen(false)}
-              sx={{
-                py: 2,
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
+            to={item.path}
+          onClick={() => setDrawerOpen(false)}
+          sx={{
+            py: 2,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+          }}
+        >
               <ListItemText primary={item.text} />
-            </ListItem>
+        </ListItem>
           ))}
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
           {isLoggedIn ? (
@@ -284,10 +284,10 @@ const Navbar = () => {
           ) : (
             <ListItem
               button
-              component={RouterLink}
+          component={RouterLink}
               to="/login"
               onClick={() => setDrawerOpen(false)}
-              sx={{
+          sx={{
                 py: 2,
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
