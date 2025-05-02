@@ -12,8 +12,13 @@ import {
   CircularProgress,
   Alert,
   Button,
+  Paper,
+  InputAdornment,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
 import AdCard from '../components/AdCard';
 
 const Home = () => {
@@ -97,20 +102,30 @@ const Home = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ 
+            color: 'primary.main',
+            fontWeight: 'bold',
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}>
             Annonces récentes
           </Typography>
           <Button
             variant="contained"
             color="primary"
             onClick={handleCreateAd}
-            sx={{ minWidth: 200 }}
+            startIcon={<AddIcon />}
+            sx={{ 
+              minWidth: 200,
+              height: { xs: 40, sm: 48 },
+              fontSize: { xs: '0.8rem', sm: '1rem' }
+            }}
           >
             Créer une annonce
           </Button>
         </Box>
+
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={4}>
             <TextField
@@ -119,6 +134,13 @@ const Home = () => {
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
@@ -128,6 +150,11 @@ const Home = () => {
                 value={category}
                 label="Catégorie"
                 onChange={(e) => setCategory(e.target.value)}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <FilterListIcon color="action" />
+                  </InputAdornment>
+                }
               >
                 <MenuItem value="">Toutes</MenuItem>
                 <MenuItem value="livres">Livres</MenuItem>
@@ -161,12 +188,14 @@ const Home = () => {
             </FormControl>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
       {filteredAds.length === 0 ? (
-        <Typography variant="h6" align="center" color="text.secondary">
-          Aucune annonce ne correspond à vos critères
-        </Typography>
+        <Paper elevation={3} sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <Typography variant="h6" color="text.secondary">
+            Aucune annonce ne correspond à vos critères
+          </Typography>
+        </Paper>
       ) : (
         <Grid container spacing={3}>
           {filteredAds.map((ad) => (

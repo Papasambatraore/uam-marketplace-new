@@ -10,9 +10,12 @@ import {
   Alert,
   Grid,
   useTheme,
+  Link,
+  CircularProgress,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { sendPasswordResetEmail } from '../services/emailService';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   marginTop: theme.spacing(8),
@@ -28,6 +31,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const [formData, setFormData] = useState({
     email: '',
@@ -36,6 +40,10 @@ const Login = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetStatus, setResetStatus] = useState(null);
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,33 +55,45 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+    setSnackbarMessage('');
 
-    // Récupérer les utilisateurs enregistrés
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Trouver l'utilisateur correspondant
-    const user = users.find(
-      (u) => u.email === formData.email && u.password === formData.password
-    );
+    try {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === formData.email && u.password === formData.password);
 
-    if (user) {
-      // Connexion réussie
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setSnackbarMessage('Connexion réussie !');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-
-      // Redirection vers le tableau de bord après 1 seconde
-      setTimeout(() => {
-        navigate('/dashboard');
-        window.location.reload();
-      }, 1000);
-    } else {
-      setSnackbarMessage('Email ou mot de passe incorrect');
+      if (user) {
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('user', JSON.stringify(user));
+        const from = location.state?.from?.pathname || '/';
+        navigate(from);
+      } else {
+        setSnackbarMessage('Email ou mot de passe incorrect');
+        setSnackbarSeverity('error');
+      }
+    } catch (error) {
+      setSnackbarMessage('Une erreur est survenue');
       setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setResetStatus(null);
+
+    try {
+      const result = await sendPasswordResetEmail(resetEmail);
+      setResetStatus(result);
+      if (result.success) {
+        setShowResetForm(false);
+      }
+    } catch (error) {
+      setResetStatus({ success: false, message: 'Erreur lors de la réinitialisation' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,71 +124,118 @@ const Login = () => {
           Connectez-vous pour accéder à votre compte
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-          <TextField
-            required
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            margin="normal"
-            autoComplete="email"
-            autoFocus
-          />
-          <TextField
-            required
-            fullWidth
-            label="Mot de passe"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            margin="normal"
-            autoComplete="current-password"
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Se connecter
-          </Button>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Button
-                fullWidth
-                variant="text"
-                onClick={() => navigate('/register')}
-                sx={{ 
-                  textTransform: 'none',
-                  [theme.breakpoints.down('sm')]: {
-                    fontSize: '0.875rem',
-                  },
-                }}
-              >
-                Créer un compte
-              </Button>
+        {!showResetForm ? (
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            <TextField
+              required
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              margin="normal"
+              autoComplete="email"
+              autoFocus
+            />
+            <TextField
+              required
+              fullWidth
+              label="Mot de passe"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              margin="normal"
+              autoComplete="current-password"
+            />
+            {snackbarMessage && (
+              <Alert severity={snackbarSeverity} sx={{ mt: 2 }}>
+                {snackbarMessage}
+              </Alert>
+            )}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Se connecter'}
+            </Button>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  variant="text"
+                  onClick={() => navigate('/register')}
+                  sx={{ 
+                    textTransform: 'none',
+                    [theme.breakpoints.down('sm')]: {
+                      fontSize: '0.875rem',
+                    },
+                  }}
+                >
+                  Créer un compte
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  variant="text"
+                  onClick={() => setShowResetForm(true)}
+                  sx={{ 
+                    textTransform: 'none',
+                    [theme.breakpoints.down('sm')]: {
+                      fontSize: '0.875rem',
+                    },
+                  }}
+                >
+                  Mot de passe oublié ?
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                fullWidth
-                variant="text"
-                onClick={() => navigate('/forgot-password')}
-                sx={{ 
-                  textTransform: 'none',
-                  [theme.breakpoints.down('sm')]: {
-                    fontSize: '0.875rem',
-                  },
-                }}
+          </Box>
+        ) : (
+          <Box component="form" onSubmit={handleResetPassword} sx={{ width: '100%' }}>
+            <Typography variant="h6" gutterBottom>
+              Réinitialisation du mot de passe
+            </Typography>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              margin="normal"
+              required
+            />
+            {resetStatus && (
+              <Alert severity={resetStatus.success ? "success" : "error"} sx={{ mt: 2 }}>
+                {resetStatus.message}
+              </Alert>
+            )}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Envoyer le mot de passe'}
+            </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link
+                component="button"
+                variant="body2"
+                onClick={() => setShowResetForm(false)}
+                sx={{ color: 'primary.main' }}
               >
-                Mot de passe oublié ?
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
+                Retour à la connexion
+              </Link>
+            </Box>
+          </Box>
+        )}
       </StyledPaper>
 
       <Snackbar
