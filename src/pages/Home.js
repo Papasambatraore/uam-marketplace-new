@@ -2,243 +2,126 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Button,
   TextField,
-  InputAdornment,
-  Paper,
-  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Typography,
+  CircularProgress,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CategoryIcon from '@mui/icons-material/Category';
-import BookIcon from '@mui/icons-material/Book';
-import ComputerIcon from '@mui/icons-material/Computer';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import SpaIcon from '@mui/icons-material/Spa';
-import WatchIcon from '@mui/icons-material/Watch';
-import BuildIcon from '@mui/icons-material/Build';
-
-const categories = [
-  { 
-    name: 'Livres', 
-    icon: <BookIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'livres', 
-    color: '#2196f3',
-    description: 'Manuels, romans, cours'
-  },
-  { 
-    name: 'Informatique', 
-    icon: <ComputerIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'informatique', 
-    color: '#4caf50',
-    description: 'Ordinateurs, accessoires'
-  },
-  { 
-    name: 'Vêtements', 
-    icon: <ShoppingBagIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'vetements', 
-    color: '#f44336',
-    description: 'Mode, style, tendance'
-  },
-  { 
-    name: 'Beauté', 
-    icon: <SpaIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'beaute', 
-    color: '#e91e63',
-    description: 'Cosmétiques, soins'
-  },
-  { 
-    name: 'Accessoires', 
-    icon: <WatchIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'accessoires', 
-    color: '#9c27b0',
-    description: 'Bijoux, montres, sacs'
-  },
-  { 
-    name: 'Services', 
-    icon: <BuildIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />, 
-    value: 'services', 
-    color: '#ff9800',
-    description: 'Cours, réparations'
-  },
-];
+import AdCard from '../components/AdCard';
 
 const Home = () => {
   const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [category, setCategory] = useState('');
+  const [department, setDepartment] = useState('');
 
   useEffect(() => {
-    // Chargement des annonces depuis le localStorage
-    const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-    setAds(storedAds);
+    const fetchAds = () => {
+      try {
+        const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+        console.log('Annonces récupérées:', storedAds);
+        setAds(storedAds);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des annonces:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAds();
   }, []);
 
   const filteredAds = ads.filter(ad => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || ad.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesCategory = !category || ad.category === category;
+    const matchesDepartment = !department || ad.department === department;
+    return matchesSearch && matchesCategory && matchesDepartment;
   });
 
-  return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h4" gutterBottom sx={{ 
-          color: '#1976d2', 
-          fontWeight: 'bold',
-          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
-        }}>
-          UAM e-commerce
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
-          La place de marché des étudiants de l'UAM
-        </Typography>
-        
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Rechercher un produit/service"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 3 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="primary" />
-              </InputAdornment>
-            ),
-          }}
-        />
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-        <Grid container spacing={2}>
-          {categories.map((category) => (
-            <Grid item xs={6} sm={4} md={2} key={category.value}>
-              <Button
-                fullWidth
-                variant={selectedCategory === category.value ? "contained" : "outlined"}
-                sx={{
-                  height: { xs: '120px', sm: '140px' },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  backgroundColor: selectedCategory === category.value ? category.color : 'transparent',
-                  color: selectedCategory === category.value ? 'white' : category.color,
-                  borderColor: category.color,
-                  '&:hover': {
-                    backgroundColor: category.color,
-                    color: 'white',
-                    borderColor: category.color,
-                  },
-                }}
-                onClick={() => setSelectedCategory(
-                  selectedCategory === category.value ? null : category.value
-                )}
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Annonces récentes
+        </Typography>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Rechercher"
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth>
+              <InputLabel>Catégorie</InputLabel>
+              <Select
+                value={category}
+                label="Catégorie"
+                onChange={(e) => setCategory(e.target.value)}
               >
-                <Box sx={{ mb: 1 }}>
-                  {category.icon}
-                </Box>
-                <Typography variant="body1" sx={{ 
-                  fontWeight: 'bold', 
-                  mb: 0.5,
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                }}>
-                  {category.name}
-                </Typography>
-                <Typography variant="caption" sx={{ 
-                  opacity: selectedCategory === category.value ? 0.9 : 0.7,
-                  fontSize: { xs: '0.6rem', sm: '0.7rem' }
-                }}>
-                  {category.description}
-                </Typography>
-              </Button>
+                <MenuItem value="">Toutes</MenuItem>
+                <MenuItem value="livres">Livres</MenuItem>
+                <MenuItem value="informatique">Informatique</MenuItem>
+                <MenuItem value="vetements">Vêtements</MenuItem>
+                <MenuItem value="beaute">Beauté</MenuItem>
+                <MenuItem value="accessoires">Accessoires</MenuItem>
+                <MenuItem value="services">Services</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth>
+              <InputLabel>Département</InputLabel>
+              <Select
+                value={department}
+                label="Département"
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                <MenuItem value="">Tous</MenuItem>
+                <MenuItem value="Droit">Droit</MenuItem>
+                <MenuItem value="Économie">Économie</MenuItem>
+                <MenuItem value="Gestion">Gestion</MenuItem>
+                <MenuItem value="Lettres">Lettres</MenuItem>
+                <MenuItem value="Sciences">Sciences</MenuItem>
+                <MenuItem value="Sciences de l'éducation">Sciences de l'éducation</MenuItem>
+                <MenuItem value="Sciences de la santé">Sciences de la santé</MenuItem>
+                <MenuItem value="Sciences sociales">Sciences sociales</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {filteredAds.length === 0 ? (
+        <Typography variant="h6" align="center" color="text.secondary">
+          Aucune annonce ne correspond à vos critères
+        </Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {filteredAds.map((ad) => (
+            <Grid item key={ad.id} xs={12} sm={6} md={4}>
+              <AdCard ad={ad} />
             </Grid>
           ))}
         </Grid>
-      </Paper>
-
-      <Typography variant="h5" sx={{ 
-        mb: 3, 
-        color: '#1976d2', 
-        fontWeight: 'bold',
-        fontSize: { xs: '1.2rem', sm: '1.5rem' }
-      }}>
-        {filteredAds.length === 0 ? 'Aucune annonce trouvée' : 'Dernières annonces'}
-      </Typography>
-
-      <Grid container spacing={3}>
-        {filteredAds.map((ad) => (
-          <Grid item xs={12} sm={6} md={4} key={ad.id}>
-            <Card sx={{ 
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              transition: 'transform 0.2s',
-              '&:hover': {
-                transform: 'scale(1.02)',
-                boxShadow: 6,
-              },
-            }}>
-              <Box
-                component="img"
-                height="200"
-                src="https://via.placeholder.com/300x200"
-                alt={ad.title}
-                sx={{ 
-                  objectFit: 'cover',
-                  width: '100%'
-                }}
-              />
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h6" component="div" sx={{ 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1rem', sm: '1.1rem' }
-                }}>
-                  {ad.title}
-                </Typography>
-                <Typography variant="h5" color="primary" sx={{ 
-                  mb: 2, 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1.2rem', sm: '1.4rem' }
-                }}>
-                  {ad.price} FCFA
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                  <Chip
-                    icon={<LocationOnIcon />}
-                    label={ad.department}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                  <Chip
-                    icon={<CategoryIcon />}
-                    label={categories.find(c => c.value === ad.category)?.name}
-                    size="small"
-                    color="secondary"
-                    variant="outlined"
-                  />
-                </Box>
-                <Button
-                  variant="contained"
-                  color="success"
-                  startIcon={<WhatsAppIcon />}
-                  fullWidth
-                  href={`https://wa.me/${ad.whatsapp}`}
-                  target="_blank"
-                  sx={{ mt: 'auto' }}
-                >
-                  Contacter sur WhatsApp
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      )}
     </Container>
   );
 };
