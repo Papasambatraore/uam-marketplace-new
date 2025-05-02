@@ -10,12 +10,14 @@ import {
   Box,
   Typography,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import AdCard from '../components/AdCard';
 
 const Home = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('');
   const [department, setDepartment] = useState('');
@@ -28,6 +30,7 @@ const Home = () => {
         setAds(storedAds);
       } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
+        setError('Erreur lors du chargement des annonces');
       } finally {
         setLoading(false);
       }
@@ -49,6 +52,14 @@ const Home = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
         <CircularProgress />
       </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Container>
     );
   }
 
