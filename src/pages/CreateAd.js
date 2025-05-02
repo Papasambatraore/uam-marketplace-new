@@ -70,45 +70,20 @@ const CreateAd = () => {
   };
 
   const handleImageChange = async (e) => {
-    console.log('=== Début du traitement des images ===');
     const files = Array.from(e.target.files);
-    console.log('Fichiers sélectionnés:', files);
-
     if (files.length > 0) {
       try {
         setLoading(true);
         setError('');
-
-        // Vérification de la taille des fichiers
-        const invalidFiles = files.filter(file => file.size > 5 * 1024 * 1024);
-        if (invalidFiles.length > 0) {
-          throw new Error(`Les images suivantes sont trop grandes (max 5MB): ${invalidFiles.map(f => f.name).join(', ')}`);
-        }
-
-        console.log('Début du téléchargement des images...');
-        
         const uploadedImages = await Promise.all(
-          files.map(async (file) => {
-            console.log('Traitement du fichier:', file.name);
-            try {
-              const imageUrl = await uploadImage(file);
-              console.log('Image téléchargée avec succès:', imageUrl);
-              return imageUrl;
-            } catch (error) {
-              console.error('Erreur lors du téléchargement:', error);
-              throw error;
-            }
-          })
+          files.map(file => uploadImage(file))
         );
-
-        console.log('Toutes les images ont été téléchargées:', uploadedImages);
         setFormData(prev => ({
           ...prev,
           images: [...prev.images, ...uploadedImages]
         }));
       } catch (error) {
-        console.error('Erreur détaillée:', error);
-        setError(error.message || 'Erreur lors du téléchargement des images');
+        setError('Erreur lors du téléchargement des images');
       } finally {
         setLoading(false);
       }
