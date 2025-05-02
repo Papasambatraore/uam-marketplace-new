@@ -289,7 +289,18 @@ const CreateAd = () => {
                       src={imageUrl}
                       alt={`Preview ${index}`}
                       loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        transition: 'opacity 0.3s ease-in-out'
+                      }}
+                      onLoad={(e) => {
+                        e.target.style.opacity = 1;
+                      }}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/150?text=Image+non+chargée';
+                      }}
                     />
                     <IconButton
                       sx={{

@@ -29,70 +29,18 @@ export const uploadImage = async (file) => {
       throw new Error('Le fichier doit être une image');
     }
 
-    // Vérifier si le dossier images/products existe
-    try {
-      console.log('Vérification du dossier images/products...');
-      const checkResponse = await fetch(
-        `https://api.github.com/repos/${username}/${repo}/contents/images/products`,
-        {
-          headers: {
-            'Authorization': `token ${token}`,
-          }
-        }
-      );
-
-      console.log('Statut de la vérification:', checkResponse.status);
-
-      if (checkResponse.status === 404) {
-        console.log('Le dossier images/products n\'existe pas, création en cours...');
-        // Créer le dossier images
-        const createImagesResponse = await fetch(
-          `https://api.github.com/repos/${username}/${repo}/contents/images/.gitkeep`,
-          {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: 'Création du dossier images',
-              content: '',
-              branch: 'main'
-            })
-          }
-        );
-        console.log('Statut de création du dossier images:', createImagesResponse.status);
-
-        // Créer le dossier products
-        const createProductsResponse = await fetch(
-          `https://api.github.com/repos/${username}/${repo}/contents/images/products/.gitkeep`,
-          {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: 'Création du dossier products',
-              content: '',
-              branch: 'main'
-            })
-          }
-        );
-        console.log('Statut de création du dossier products:', createProductsResponse.status);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la vérification/création des dossiers:', error);
-      throw new Error('Erreur lors de la création des dossiers: ' + error.message);
-    }
+    // Compression de l'image
+    console.log('Compression de l\'image...');
+    const compressedFile = await compressImage(file);
+    console.log('Image compressée:', compressedFile);
 
     // Convertir le fichier en base64
     console.log('Conversion en base64...');
-    const base64Image = await convertToBase64(file);
+    const base64Image = await convertToBase64(compressedFile);
     console.log('Conversion réussie');
     
     // Créer le nom du fichier
-    const fileName = `images/products/${Date.now()}-${file.name}`;
+    const fileName = `images/products/${Date.now()}-${compressedFile.name}`;
     console.log('Nom du fichier:', fileName);
     
     // Préparer la requête
@@ -128,6 +76,54 @@ export const uploadImage = async (file) => {
     console.error('Erreur complète:', error);
     throw new Error(`Erreur lors du téléchargement de l'image: ${error.message}`);
   }
+};
+
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Réduire la taille si nécessaire
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        if (width > MAX_WIDTH) {
+          height = (height * MAX_WIDTH) / width;
+          width = MAX_WIDTH;
+        }
+        if (height > MAX_HEIGHT) {
+          width = (width * MAX_HEIGHT) / height;
+          height = MAX_HEIGHT;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir en JPEG avec une qualité de 0.7
+        canvas.toBlob(
+          (blob) => {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          0.7
+        );
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
 };
 
 const convertToBase64 = (file) => {
