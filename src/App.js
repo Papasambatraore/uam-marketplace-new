@@ -16,6 +16,7 @@ import SearchResults from './pages/SearchResults';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
 
 const theme = createTheme({
@@ -40,6 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ads/:id" element={<AdDetails />} />
           <Route path="/create-ad" element={<CreateAd />} />

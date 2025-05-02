@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -24,11 +24,28 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    surname: '',
     email: '',
     phone: '',
     department: '',
     avatar: null,
+    avatarUrl: null,
   });
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        surname: user.surname || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        department: user.department || '',
+        avatar: user.avatar || null,
+        avatarUrl: user.avatarUrl || null,
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,9 +58,11 @@ const Profile = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const avatarUrl = URL.createObjectURL(file);
       setFormData(prev => ({
         ...prev,
-        avatar: file
+        avatar: file,
+        avatarUrl
       }));
     }
   };
@@ -54,7 +73,12 @@ const Profile = () => {
     
     // Simuler une requête API
     setTimeout(() => {
-      localStorage.setItem('user', JSON.stringify(formData));
+      const userData = {
+        ...formData,
+        id: Date.now(),
+        avatarUrl: formData.avatarUrl
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
       setLoading(false);
       navigate('/');
     }, 1000);
@@ -77,7 +101,7 @@ const Profile = () => {
             <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Box sx={{ position: 'relative' }}>
                 <Avatar
-                  src={formData.avatar ? URL.createObjectURL(formData.avatar) : ''}
+                  src={formData.avatarUrl}
                   sx={{ 
                     width: { xs: 100, sm: 120 }, 
                     height: { xs: 100, sm: 120 },
@@ -113,12 +137,24 @@ const Profile = () => {
               </Box>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Nom complet"
+                label="Nom"
                 name="name"
                 value={formData.name}
+                onChange={handleChange}
+                required
+                sx={{ mb: 2 }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Prénom"
+                name="surname"
+                value={formData.surname}
                 onChange={handleChange}
                 required
                 sx={{ mb: 2 }}

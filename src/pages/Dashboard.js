@@ -17,6 +17,8 @@ import {
   Chip,
   Snackbar,
   Alert,
+  ImageList,
+  ImageListItem,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -33,9 +35,9 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const checkLoginStatus = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
     
     if (!isLoggedIn || !currentUser) {
       navigate('/login');
@@ -48,6 +50,11 @@ const Dashboard = () => {
     const allAds = JSON.parse(localStorage.getItem('ads') || '[]');
     const userAds = allAds.filter(ad => ad.userId === currentUser.id);
     setAds(userAds);
+    };
+
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+    return () => window.removeEventListener('storage', checkLoginStatus);
   }, [navigate]);
 
   const handleDeleteClick = (ad) => {
@@ -140,12 +147,24 @@ const Dashboard = () => {
           {ads.map((ad) => (
             <Grid item xs={12} sm={6} md={4} key={ad.id}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                {ad.imageUrls && ad.imageUrls.length > 0 ? (
+                  <ImageList sx={{ width: '100%', height: 200 }} cols={1} rowHeight={200}>
+                    <ImageListItem>
+                      <img
+                        src={ad.imageUrls[0]}
+                        alt={ad.title}
+                        loading="lazy"
+                      />
+                    </ImageListItem>
+                  </ImageList>
+                ) : (
                 <CardMedia
                   component="img"
                   height="200"
-                  image={ad.image || 'https://via.placeholder.com/300x200'}
+                    image="https://via.placeholder.com/300x200"
                   alt={ad.title}
                 />
+                )}
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography gutterBottom variant="h5" component="div">
                     {ad.title}
@@ -168,7 +187,7 @@ const Dashboard = () => {
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    Publié le: {ad.date}
+                    Publié le: {new Date(ad.date).toLocaleDateString()}
                   </Typography>
                 </CardContent>
                 <CardActions>

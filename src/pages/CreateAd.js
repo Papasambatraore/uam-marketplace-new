@@ -13,9 +13,14 @@ import {
   MenuItem,
   Chip,
   CircularProgress,
+  ImageList,
+  ImageListItem,
+  IconButton,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { uploadImage } from '../services/imageService';
 
 const categories = [
   { name: 'Livres', value: 'livres', color: '#2196f3' },
@@ -52,7 +57,9 @@ const CreateAd = () => {
     department: '',
     whatsapp: '',
     images: [],
+    imageUrls: [],
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,12 +69,27 @@ const CreateAd = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const imageUrl = await uploadImage(file);
+        setFormData(prev => ({
         ...prev,
-      images: [...prev.images, ...files]
+          images: [...prev.images, imageUrl]
       }));
+      } catch (error) {
+        setError('Erreur lors du téléchargement de l\'image');
+      }
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -77,10 +99,12 @@ const CreateAd = () => {
     // Simuler une requête API
     setTimeout(() => {
       const ads = JSON.parse(localStorage.getItem('ads') || '[]');
-      const newAd = {
-        id: Date.now(),
+    const newAd = {
+      id: Date.now(),
         ...formData,
         date: new Date().toISOString(),
+      userId: JSON.parse(localStorage.getItem('user')).id,
+        imageUrls: formData.imageUrls
       };
       localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
       setLoading(false);
@@ -197,7 +221,6 @@ const CreateAd = () => {
                     accept="image/*"
                     id="contained-button-file"
                     type="file"
-                    multiple
                     onChange={handleImageChange}
                   />
                   <Button
@@ -213,28 +236,32 @@ const CreateAd = () => {
                   </Button>
                 </label>
               </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {formData.images.map((image, index) => (
-                  <Chip
-                    key={index}
-                    label={image.name}
-                    onDelete={() => {
-                      setFormData(prev => ({
-                        ...prev,
-                        images: prev.images.filter((_, i) => i !== index)
-                      }));
-                    }}
-                    sx={{ 
-                      maxWidth: { xs: '100%', sm: '200px' },
-                      '& .MuiChip-label': {
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }
-                    }}
-                  />
+              <ImageList sx={{ width: '100%', height: 200 }} cols={3} rowHeight={164}>
+                {formData.imageUrls?.map((imageUrl, index) => (
+                  <ImageListItem key={index}>
+                    <img
+                      src={imageUrl}
+                      alt={`Preview ${index}`}
+                      loading="lazy"
+                    />
+                    <IconButton
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        color: 'white',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        },
+                      }}
+                      onClick={() => handleRemoveImage(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ImageListItem>
                 ))}
-              </Box>
+              </ImageList>
             </Grid>
 
             <Grid item xs={12}>

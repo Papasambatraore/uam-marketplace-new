@@ -113,6 +113,38 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+// Route pour l'envoi du code de réinitialisation
+app.post('/api/send-reset-code', async (req, res) => {
+  const { email, code, name, surname } = req.body;
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Code de réinitialisation de mot de passe - UAM Marketplace',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1976d2;">Bonjour ${surname} ${name},</h2>
+          <p>Vous avez demandé la réinitialisation de votre mot de passe sur UAM Marketplace.</p>
+          <p>Votre code de réinitialisation est :</p>
+          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #1976d2; margin: 0;">${code}</h1>
+          </div>
+          <p>Ce code est valable pendant 1 heure.</p>
+          <p>Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet email.</p>
+          <p>Cordialement,<br>L'équipe UAM Marketplace</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Email envoyé avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'email' });
+  }
+});
+
 // Démarrer le serveur
 app.listen(port, () => {
   console.log(`Serveur backend démarré sur le port ${port}`);
