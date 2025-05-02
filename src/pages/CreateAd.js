@@ -92,24 +92,28 @@ const CreateAd = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    
-    // Simuler une requête API
-    setTimeout(() => {
-      const ads = JSON.parse(localStorage.getItem('ads') || '[]');
-    const newAd = {
-      id: Date.now(),
-        ...formData,
-        date: new Date().toISOString(),
-      userId: JSON.parse(localStorage.getItem('user')).id,
-        imageUrls: formData.imageUrls
-      };
-      localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
-      setLoading(false);
-      navigate('/');
-    }, 1000);
+    try {
+      setLoading(true);
+      
+      // Simuler une requête API
+      setTimeout(() => {
+        const ads = JSON.parse(localStorage.getItem('ads') || '[]');
+      const newAd = {
+        id: Date.now(),
+          ...formData,
+          date: new Date().toISOString(),
+        userId: JSON.parse(localStorage.getItem('user')).id,
+          imageUrls: formData.imageUrls
+        };
+        localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
+        setLoading(false);
+        navigate('/');
+      }, 1000);
+    } catch (err) {
+      console.error('Erreur lors de la création de l\'annonce:', err);
+    }
   };
 
   return (
