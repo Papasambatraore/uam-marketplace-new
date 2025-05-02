@@ -27,7 +27,19 @@ const Home = () => {
       try {
         const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
         console.log('Annonces récupérées:', storedAds);
-        setAds(storedAds);
+        
+        // Vérification et nettoyage des données
+        const cleanedAds = storedAds.map(ad => ({
+          ...ad,
+          images: Array.isArray(ad.images) ? ad.images : [],
+          price: ad.price || '0',
+          category: ad.category || 'Non spécifié',
+          department: ad.department || 'Non spécifié',
+          whatsapp: ad.whatsapp || '',
+        }));
+        
+        console.log('Annonces nettoyées:', cleanedAds);
+        setAds(cleanedAds);
       } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
         setError('Erreur lors du chargement des annonces');

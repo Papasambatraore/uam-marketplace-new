@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardMedia,
@@ -34,11 +35,17 @@ const StyledCardMedia = styled(CardMedia)({
 });
 
 const AdCard = ({ ad }) => {
+  const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const handleWhatsAppClick = () => {
+  const handleCardClick = () => {
+    navigate(`/annonce/${ad.id}`);
+  };
+
+  const handleWhatsAppClick = (e) => {
+    e.stopPropagation();
     const phoneNumber = ad.whatsapp.replace(/\D/g, '');
     const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -46,7 +53,7 @@ const AdCard = ({ ad }) => {
   };
 
   return (
-    <StyledCard>
+    <StyledCard onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
       <StyledCardMedia>
         {!imageLoaded && !imageError && (
           <Skeleton
@@ -96,7 +103,10 @@ const AdCard = ({ ad }) => {
               bgcolor: 'rgba(255, 255, 255, 0.9)',
             },
           }}
-          onClick={() => setIsFavorite(!isFavorite)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
         >
           <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
         </IconButton>

@@ -18,6 +18,7 @@ import NotFound from './pages/NotFound';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
+import AdDetail from './pages/AdDetail';
 
 const theme = createTheme({
   palette: {
@@ -51,6 +52,7 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/annonce/:id" element={<AdDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
