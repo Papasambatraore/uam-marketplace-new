@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -16,21 +16,13 @@ import {
   ImageList,
   ImageListItem,
   IconButton,
+  Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { uploadImage } from '../services/imageService';
-
-const categories = [
-  { name: 'Livres', value: 'livres', color: '#2196f3' },
-  { name: 'Informatique', value: 'informatique', color: '#4caf50' },
-  { name: 'Vêtements', value: 'vetements', color: '#f44336' },
-  { name: 'Beauté', value: 'beaute', color: '#e91e63' },
-  { name: 'Accessoires', value: 'accessoires', color: '#9c27b0' },
-  { name: 'Services', value: 'services', color: '#ff9800' },
-  { name: 'Alimentation & Boisson', value: 'alimentation', color: '#795548' },
-];
+import { categories } from '../constants/categories';
 
 const departments = [
   'Droit',
@@ -50,6 +42,7 @@ const Input = styled('input')({
 const CreateAd = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -59,7 +52,14 @@ const CreateAd = () => {
     whatsapp: '',
     images: [],
   });
-  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Vérifier si l'utilisateur est connecté
+    const user = localStorage.getItem('user');
+    if (!user) {
+      navigate('/connexion', { state: { from: '/creer-annonce' } });
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -124,39 +124,46 @@ const CreateAd = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
-      setLoading(true);
-      setError('');
-      
-      // Récupérer l'utilisateur connecté
+      // Vérifier si l'utilisateur est toujours connecté
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) {
         throw new Error('Vous devez être connecté pour créer une annonce');
       }
+
+      // Récupérer les annonces existantes
+      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
       
       // Créer la nouvelle annonce
       const newAd = {
-        id: Date.now(),
+        id: Date.now().toString(),
         ...formData,
+        author: user.email,
         date: new Date().toISOString(),
-        author: user.name || 'Anonyme',
-        userId: user.id
       };
-      
-      // Récupérer les annonces existantes
-      const ads = JSON.parse(localStorage.getItem('ads') || '[]');
-      
+
       // Ajouter la nouvelle annonce
-      localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
-      
-      setLoading(false);
+      localStorage.setItem('ads', JSON.stringify([...existingAds, newAd]));
+
+      // Rediriger vers la page d'accueil
       navigate('/');
-    } catch (err) {
-      setError('Erreur lors de la création de l\'annonce');
-      console.error('Erreur lors de la création de l\'annonce:', err);
+    } catch (error) {
+      setError(error.message);
+    } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
@@ -169,6 +176,12 @@ const CreateAd = () => {
         }}>
           Créer une nouvelle annonce
         </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
@@ -285,11 +298,6 @@ const CreateAd = () => {
                   </Button>
                 </label>
               </Box>
-              {error && (
-                <Typography color="error" sx={{ mb: 2 }}>
-                  {error}
-                </Typography>
-              )}
               <ImageList sx={{ width: '100%', height: 200 }} cols={3} rowHeight={164}>
                 {formData.images.map((imageUrl, index) => (
                   <ImageListItem key={index}>

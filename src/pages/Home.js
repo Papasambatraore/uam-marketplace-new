@@ -132,19 +132,35 @@ const Home = () => {
           }}>
             Annonces récentes
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleCreateAd}
-            startIcon={<AddIcon />}
-            sx={{ 
-              minWidth: 200,
-              height: { xs: 40, sm: 48 },
-              fontSize: { xs: '0.8rem', sm: '1rem' }
-            }}
-          >
-            Créer une annonce
-          </Button>
+          {localStorage.getItem('user') ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateAd}
+              startIcon={<AddIcon />}
+              sx={{ 
+                minWidth: 200,
+                height: { xs: 40, sm: 48 },
+                fontSize: { xs: '0.8rem', sm: '1rem' }
+              }}
+            >
+              Créer une annonce
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate('/connexion', { state: { from: '/creer-annonce' } })}
+              startIcon={<AddIcon />}
+              sx={{ 
+                minWidth: 200,
+                height: { xs: 40, sm: 48 },
+                fontSize: { xs: '0.8rem', sm: '1rem' }
+              }}
+            >
+              Se connecter pour créer une annonce
+            </Button>
+          )}
         </Box>
 
         <Grid container spacing={2} sx={{ mb: 3 }}>
