@@ -11,10 +11,13 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import AdCard from '../components/AdCard';
 
 const Home = () => {
+  const navigate = useNavigate();
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -67,6 +70,15 @@ const Home = () => {
     return matchesSearch && matchesCategory && matchesDepartment;
   });
 
+  const handleCreateAd = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      navigate('/creer-annonce');
+    } else {
+      navigate('/connexion', { state: { from: '/creer-annonce' } });
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -86,9 +98,19 @@ const Home = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Annonces récentes
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            Annonces récentes
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCreateAd}
+            sx={{ minWidth: 200 }}
+          >
+            Créer une annonce
+          </Button>
+        </Box>
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={4}>
             <TextField
