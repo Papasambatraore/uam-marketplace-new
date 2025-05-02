@@ -35,6 +35,9 @@ export const uploadImage = async (file) => {
 
 export const deleteImage = async (publicId) => {
   try {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = await generateSignature(publicId, timestamp);
+
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/destroy`,
       {
@@ -44,12 +47,9 @@ export const deleteImage = async (publicId) => {
         },
         body: JSON.stringify({
           public_id: publicId,
-          signature: cloudinary.utils.api_sign_request(
-            { public_id: publicId, timestamp: Math.floor(Date.now() / 1000) },
-            process.env.REACT_APP_CLOUDINARY_API_SECRET
-          ),
+          signature: signature,
           api_key: process.env.REACT_APP_CLOUDINARY_API_KEY,
-          timestamp: Math.floor(Date.now() / 1000)
+          timestamp: timestamp
         })
       }
     );
@@ -63,4 +63,14 @@ export const deleteImage = async (publicId) => {
     console.error('Erreur lors de la suppression de l\'image:', error);
     throw error;
   }
+};
+
+const generateSignature = async (publicId, timestamp) => {
+  const message = `public_id=${publicId}&timestamp=${timestamp}${process.env.REACT_APP_CLOUDINARY_API_SECRET}`;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hash = await crypto.subtle.digest('SHA-1', data);
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }; 
