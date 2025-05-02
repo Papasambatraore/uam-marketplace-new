@@ -20,7 +20,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { uploadImage } from '../services/imageService';
+import { uploadImage } from '../services/imageUpload';
 
 const categories = [
   { name: 'Livres', value: 'livres', color: '#2196f3' },
