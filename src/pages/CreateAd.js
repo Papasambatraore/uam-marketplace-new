@@ -20,7 +20,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { uploadImage } from '../services/imageUpload';
+import { uploadImage } from '../services/imageService';
 
 const categories = [
   { name: 'Livres', value: 'livres', color: '#2196f3' },
@@ -57,7 +57,6 @@ const CreateAd = () => {
     department: '',
     whatsapp: '',
     images: [],
-    imageUrls: [],
   });
   const [error, setError] = useState('');
 
@@ -70,17 +69,50 @@ const CreateAd = () => {
   };
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    console.log('=== Début du traitement des images ===');
+    const files = Array.from(e.target.files);
+    console.log('Fichiers sélectionnés:', files);
+
+    if (files.length > 0) {
       try {
-        const imageUrl = await uploadImage(file);
+        setLoading(true);
+        setError('');
+        console.log('Début du téléchargement des images...');
+        
+        const uploadedImages = await Promise.all(
+          files.map(async (file) => {
+            console.log('Traitement du fichier:', file.name);
+            try {
+              // Vérification de la taille du fichier (max 5MB)
+              if (file.size > 5 * 1024 * 1024) {
+                throw new Error(`L'image ${file.name} est trop grande (max 5MB)`);
+              }
+
+              // Vérification du type de fichier
+              if (!file.type.startsWith('image/')) {
+                throw new Error(`Le fichier ${file.name} n'est pas une image`);
+              }
+
+              const imageUrl = await uploadImage(file);
+              console.log('Image téléchargée avec succès:', imageUrl);
+              return imageUrl;
+            } catch (error) {
+              console.error('Erreur lors du téléchargement:', error);
+              throw error;
+            }
+          })
+        );
+
+        console.log('Toutes les images ont été téléchargées:', uploadedImages);
         setFormData(prev => ({
           ...prev,
-          images: [...prev.images, imageUrl]
+          images: [...prev.images, ...uploadedImages]
         }));
-      } catch (err) {
-        setError('Erreur lors du téléchargement de l\'image');
-        console.error('Erreur lors du téléchargement de l\'image:', err);
+      } catch (error) {
+        console.error('Erreur détaillée:', error);
+        setError(error.message || 'Erreur lors du téléchargement des images');
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -88,8 +120,7 @@ const CreateAd = () => {
   const handleRemoveImage = (index) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index)
     }));
   };
 
@@ -106,8 +137,7 @@ const CreateAd = () => {
           id: Date.now(),
           ...formData,
           date: new Date().toISOString(),
-          userId: JSON.parse(localStorage.getItem('user')).id,
-          imageUrls: formData.imageUrls
+          userId: JSON.parse(localStorage.getItem('user')).id
         };
         localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
         setLoading(false);
@@ -224,33 +254,42 @@ const CreateAd = () => {
 
             <Grid item xs={12}>
               <Box sx={{ mb: 2 }}>
+                <input
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  id="contained-button-file"
+                  type="file"
+                  multiple
+                  onChange={handleImageChange}
+                />
                 <label htmlFor="contained-button-file">
-                  <Input
-                    accept="image/*"
-                    id="contained-button-file"
-                    type="file"
-                    onChange={handleImageChange}
-                  />
                   <Button
                     variant="contained"
                     component="span"
                     fullWidth
+                    disabled={loading}
                     sx={{ 
                       height: { xs: 40, sm: 48 },
                       fontSize: { xs: '0.8rem', sm: '1rem' }
                     }}
                   >
-                    Ajouter des photos
+                    {loading ? <CircularProgress size={24} /> : 'Ajouter des photos'}
                   </Button>
                 </label>
               </Box>
+              {error && (
+                <Typography color="error" sx={{ mb: 2 }}>
+                  {error}
+                </Typography>
+              )}
               <ImageList sx={{ width: '100%', height: 200 }} cols={3} rowHeight={164}>
-                {formData.imageUrls?.map((imageUrl, index) => (
+                {formData.images.map((imageUrl, index) => (
                   <ImageListItem key={index}>
                     <img
                       src={imageUrl}
                       alt={`Preview ${index}`}
                       loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                     <IconButton
                       sx={{
@@ -273,10 +312,10 @@ const CreateAd = () => {
             </Grid>
 
             <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
                 fullWidth
                 disabled={loading}
                 sx={{ 
@@ -285,7 +324,7 @@ const CreateAd = () => {
                 }}
               >
                 {loading ? <CircularProgress size={24} /> : 'Publier l\'annonce'}
-                </Button>
+              </Button>
             </Grid>
           </Grid>
         </form>
