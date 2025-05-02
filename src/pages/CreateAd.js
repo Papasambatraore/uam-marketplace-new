@@ -77,22 +77,19 @@ const CreateAd = () => {
       try {
         setLoading(true);
         setError('');
+
+        // Vérification de la taille des fichiers
+        const invalidFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+        if (invalidFiles.length > 0) {
+          throw new Error(`Les images suivantes sont trop grandes (max 5MB): ${invalidFiles.map(f => f.name).join(', ')}`);
+        }
+
         console.log('Début du téléchargement des images...');
         
         const uploadedImages = await Promise.all(
           files.map(async (file) => {
             console.log('Traitement du fichier:', file.name);
             try {
-              // Vérification de la taille du fichier (max 5MB)
-              if (file.size > 5 * 1024 * 1024) {
-                throw new Error(`L'image ${file.name} est trop grande (max 5MB)`);
-              }
-
-              // Vérification du type de fichier
-              if (!file.type.startsWith('image/')) {
-                throw new Error(`Le fichier ${file.name} n'est pas une image`);
-              }
-
               const imageUrl = await uploadImage(file);
               console.log('Image téléchargée avec succès:', imageUrl);
               return imageUrl;

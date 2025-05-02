@@ -3,6 +3,11 @@ export const uploadImage = async (file) => {
     console.log('=== Début du téléchargement de l\'image ===');
     console.log('Fichier reçu:', file);
     
+    // Vérification du type de fichier
+    if (!file.type.startsWith('image/')) {
+      throw new Error(`Le fichier ${file.name} n'est pas une image valide`);
+    }
+
     // Vérification des variables d'environnement
     const username = process.env.REACT_APP_GITHUB_USERNAME;
     const repo = process.env.REACT_APP_GITHUB_REPO;
@@ -21,12 +26,6 @@ export const uploadImage = async (file) => {
         token: !token
       });
       throw new Error('Configuration GitHub manquante. Vérifiez les variables d\'environnement dans Netlify.');
-    }
-
-    // Vérification du type de fichier
-    if (!file.type.startsWith('image/')) {
-      console.error('Type de fichier invalide:', file.type);
-      throw new Error('Le fichier doit être une image');
     }
 
     // Compression de l'image
@@ -66,6 +65,9 @@ export const uploadImage = async (file) => {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Erreur GitHub:', errorData);
+      if (response.status === 404) {
+        throw new Error('Le dépôt GitHub n\'existe pas ou n\'est pas accessible');
+      }
       throw new Error(`Erreur GitHub: ${errorData.message}`);
     }
 
