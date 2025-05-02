@@ -15,16 +15,23 @@ export const uploadImage = async (file) => {
     });
 
     if (!username || !repo || !token) {
+      console.error('Variables d\'environnement manquantes:', {
+        username: !username,
+        repo: !repo,
+        token: !token
+      });
       throw new Error('Configuration GitHub manquante. Vérifiez les variables d\'environnement dans Netlify.');
     }
 
     // Vérification du type de fichier
     if (!file.type.startsWith('image/')) {
+      console.error('Type de fichier invalide:', file.type);
       throw new Error('Le fichier doit être une image');
     }
 
     // Vérifier si le dossier images/products existe
     try {
+      console.log('Vérification du dossier images/products...');
       const checkResponse = await fetch(
         `https://api.github.com/repos/${username}/${repo}/contents/images/products`,
         {
@@ -34,10 +41,12 @@ export const uploadImage = async (file) => {
         }
       );
 
+      console.log('Statut de la vérification:', checkResponse.status);
+
       if (checkResponse.status === 404) {
         console.log('Le dossier images/products n\'existe pas, création en cours...');
         // Créer le dossier images
-        await fetch(
+        const createImagesResponse = await fetch(
           `https://api.github.com/repos/${username}/${repo}/contents/images/.gitkeep`,
           {
             method: 'PUT',
@@ -52,9 +61,10 @@ export const uploadImage = async (file) => {
             })
           }
         );
+        console.log('Statut de création du dossier images:', createImagesResponse.status);
 
         // Créer le dossier products
-        await fetch(
+        const createProductsResponse = await fetch(
           `https://api.github.com/repos/${username}/${repo}/contents/images/products/.gitkeep`,
           {
             method: 'PUT',
@@ -69,7 +79,7 @@ export const uploadImage = async (file) => {
             })
           }
         );
-        console.log('Dossiers créés avec succès');
+        console.log('Statut de création du dossier products:', createProductsResponse.status);
       }
     } catch (error) {
       console.error('Erreur lors de la vérification/création des dossiers:', error);
