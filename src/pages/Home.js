@@ -14,12 +14,27 @@ import {
   Button,
   Paper,
   InputAdornment,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
+  CardMedia,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import AdCard from '../components/AdCard';
+
+const categories = [
+  { name: 'Livres', value: 'livres', icon: '📚', color: '#2196f3' },
+  { name: 'Informatique', value: 'informatique', icon: '💻', color: '#4caf50' },
+  { name: 'Vêtements', value: 'vetements', icon: '👕', color: '#f44336' },
+  { name: 'Beauté', value: 'beaute', icon: '💄', color: '#e91e63' },
+  { name: 'Accessoires', value: 'accessoires', icon: '👜', color: '#9c27b0' },
+  { name: 'Services', value: 'services', icon: '🔧', color: '#ff9800' },
+  { name: 'Alimentation & Boisson', value: 'alimentation', icon: '🍽️', color: '#795548' },
+];
 
 const Home = () => {
   const navigate = useNavigate();
@@ -29,6 +44,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('');
   const [department, setDepartment] = useState('');
+  const [selectedTab, setSelectedTab] = useState(0);
 
   useEffect(() => {
     const fetchAds = () => {
@@ -82,6 +98,11 @@ const Home = () => {
     } else {
       navigate('/connexion', { state: { from: '/creer-annonce' } });
     }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+    setCategory(categories[newValue].value);
   };
 
   if (loading) {
@@ -145,30 +166,6 @@ const Home = () => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
-              <InputLabel>Catégorie</InputLabel>
-              <Select
-                value={category}
-                label="Catégorie"
-                onChange={(e) => setCategory(e.target.value)}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <FilterListIcon color="action" />
-                  </InputAdornment>
-                }
-              >
-                <MenuItem value="">Toutes</MenuItem>
-                <MenuItem value="livres">Livres</MenuItem>
-                <MenuItem value="informatique">Informatique</MenuItem>
-                <MenuItem value="vetements">Vêtements</MenuItem>
-                <MenuItem value="beaute">Beauté</MenuItem>
-                <MenuItem value="accessoires">Accessoires</MenuItem>
-                <MenuItem value="services">Services</MenuItem>
-                <MenuItem value="alimentation">Alimentation & Boisson</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth>
               <InputLabel>Département</InputLabel>
               <Select
                 value={department}
@@ -188,6 +185,40 @@ const Home = () => {
             </FormControl>
           </Grid>
         </Grid>
+      </Paper>
+
+      <Paper elevation={3} sx={{ mb: 4, borderRadius: 2 }}>
+        <Tabs
+          value={selectedTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            '& .MuiTab-root': {
+              minWidth: 120,
+              fontSize: { xs: '0.8rem', sm: '1rem' },
+            },
+          }}
+        >
+          {categories.map((cat, index) => (
+            <Tab
+              key={cat.value}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </Box>
+              }
+              sx={{
+                color: cat.color,
+                '&.Mui-selected': {
+                  color: cat.color,
+                  fontWeight: 'bold',
+                },
+              }}
+            />
+          ))}
+        </Tabs>
       </Paper>
 
       {filteredAds.length === 0 ? (
