@@ -27,7 +27,8 @@ export const uploadImage = async (file) => {
 export const deleteImage = async (publicId) => {
   try {
     const timestamp = Math.floor(Date.now() / 1000);
-    const signature = await generateSignature(publicId, timestamp);
+    const message = `public_id=${publicId}&timestamp=${timestamp}${process.env.REACT_APP_CLOUDINARY_API_SECRET}`;
+    const signature = await generateSignature(message);
 
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/destroy`,
@@ -56,8 +57,7 @@ export const deleteImage = async (publicId) => {
   }
 };
 
-const generateSignature = async (publicId, timestamp) => {
-  const message = `public_id=${publicId}&timestamp=${timestamp}${process.env.REACT_APP_CLOUDINARY_API_SECRET}`;
+const generateSignature = async (message) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
   const hash = await crypto.subtle.digest('SHA-1', data);
