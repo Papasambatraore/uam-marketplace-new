@@ -75,11 +75,12 @@ const CreateAd = () => {
       try {
         const imageUrl = await uploadImage(file);
         setFormData(prev => ({
-        ...prev,
+          ...prev,
           images: [...prev.images, imageUrl]
-      }));
-      } catch (error) {
+        }));
+      } catch (err) {
         setError('Erreur lors du téléchargement de l\'image');
+        console.error('Erreur lors du téléchargement de l\'image:', err);
       }
     }
   };
@@ -96,15 +97,16 @@ const CreateAd = () => {
     e.preventDefault();
     try {
       setLoading(true);
+      setError('');
       
       // Simuler une requête API
       setTimeout(() => {
         const ads = JSON.parse(localStorage.getItem('ads') || '[]');
-      const newAd = {
-        id: Date.now(),
+        const newAd = {
+          id: Date.now(),
           ...formData,
           date: new Date().toISOString(),
-        userId: JSON.parse(localStorage.getItem('user')).id,
+          userId: JSON.parse(localStorage.getItem('user')).id,
           imageUrls: formData.imageUrls
         };
         localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
@@ -112,7 +114,9 @@ const CreateAd = () => {
         navigate('/');
       }, 1000);
     } catch (err) {
+      setError('Erreur lors de la création de l\'annonce');
       console.error('Erreur lors de la création de l\'annonce:', err);
+      setLoading(false);
     }
   };
 
