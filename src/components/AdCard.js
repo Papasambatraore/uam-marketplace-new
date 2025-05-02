@@ -10,6 +10,7 @@ import {
   Skeleton,
   Chip,
   Button,
+  Avatar,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -34,6 +35,27 @@ const StyledCardMedia = styled(CardMedia)({
   },
 });
 
+const getCategoryColor = (category) => {
+  switch (category) {
+    case 'livres':
+      return 'primary.light';
+    case 'informatique':
+      return 'success.light';
+    case 'vetements':
+      return 'error.light';
+    case 'beaute':
+      return 'pink.light';
+    case 'accessoires':
+      return 'purple.light';
+    case 'services':
+      return 'orange.light';
+    case 'alimentation':
+      return 'brown.light';
+    default:
+      return 'grey.light';
+  }
+};
+
 const AdCard = ({ ad }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -47,7 +69,11 @@ const AdCard = ({ ad }) => {
   const handleWhatsAppClick = (e) => {
     e.stopPropagation();
     const phoneNumber = ad.whatsapp.replace(/\D/g, '');
-    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"`;
+    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"\n\n` +
+                   `Prix: ${ad.price} FCFA\n` +
+                   `Catégorie: ${ad.category}\n` +
+                   `Département: ${ad.department}\n\n` +
+                   `Est-ce que cette annonce est toujours disponible ?`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -63,7 +89,7 @@ const AdCard = ({ ad }) => {
             animation="wave"
           />
         )}
-        {ad.images && ad.images.length > 0 && (
+        {ad.images && ad.images.length > 0 ? (
           <img
             src={ad.images[0]}
             alt={ad.title}
@@ -76,6 +102,21 @@ const AdCard = ({ ad }) => {
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
           />
+        ) : (
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'grey.200',
+            }}
+          >
+            <Typography color="text.secondary">
+              Aucune image
+            </Typography>
+          </Box>
         )}
         {imageError && (
           <Box
@@ -112,6 +153,14 @@ const AdCard = ({ ad }) => {
         </IconButton>
       </StyledCardMedia>
       <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar sx={{ bgcolor: 'primary.main', mr: 1 }}>
+            {ad.author.charAt(0).toUpperCase()}
+          </Avatar>
+          <Typography variant="subtitle2" color="text.secondary">
+            {ad.author}
+          </Typography>
+        </Box>
         <Typography gutterBottom variant="h6" component="div" noWrap>
           {ad.title}
         </Typography>
@@ -125,7 +174,7 @@ const AdCard = ({ ad }) => {
             label={ad.category}
             size="small"
             sx={{
-              bgcolor: 'primary.light',
+              bgcolor: getCategoryColor(ad.category),
               color: 'white',
             }}
           />

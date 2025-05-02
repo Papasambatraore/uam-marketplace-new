@@ -29,6 +29,7 @@ const categories = [
   { name: 'Beauté', value: 'beaute', color: '#e91e63' },
   { name: 'Accessoires', value: 'accessoires', color: '#9c27b0' },
   { name: 'Services', value: 'services', color: '#ff9800' },
+  { name: 'Alimentation & Boisson', value: 'alimentation', color: '#795548' },
 ];
 
 const departments = [
@@ -127,19 +128,29 @@ const CreateAd = () => {
       setLoading(true);
       setError('');
       
-      // Simuler une requête API
-      setTimeout(() => {
-        const ads = JSON.parse(localStorage.getItem('ads') || '[]');
-        const newAd = {
-          id: Date.now(),
-          ...formData,
-          date: new Date().toISOString(),
-          userId: JSON.parse(localStorage.getItem('user')).id
-        };
-        localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
-        setLoading(false);
-        navigate('/');
-      }, 1000);
+      // Récupérer l'utilisateur connecté
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('Vous devez être connecté pour créer une annonce');
+      }
+      
+      // Créer la nouvelle annonce
+      const newAd = {
+        id: Date.now(),
+        ...formData,
+        date: new Date().toISOString(),
+        author: user.name || 'Anonyme',
+        userId: user.id
+      };
+      
+      // Récupérer les annonces existantes
+      const ads = JSON.parse(localStorage.getItem('ads') || '[]');
+      
+      // Ajouter la nouvelle annonce
+      localStorage.setItem('ads', JSON.stringify([...ads, newAd]));
+      
+      setLoading(false);
+      navigate('/');
     } catch (err) {
       setError('Erreur lors de la création de l\'annonce');
       console.error('Erreur lors de la création de l\'annonce:', err);

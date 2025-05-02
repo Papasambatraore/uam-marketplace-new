@@ -36,10 +36,17 @@ const Home = () => {
           category: ad.category || 'Non spécifié',
           department: ad.department || 'Non spécifié',
           whatsapp: ad.whatsapp || '',
+          author: ad.author || 'Anonyme',
+          date: ad.date || new Date().toISOString(),
         }));
         
-        console.log('Annonces nettoyées:', cleanedAds);
-        setAds(cleanedAds);
+        // Tri par date (les plus récentes en premier)
+        const sortedAds = cleanedAds.sort((a, b) => 
+          new Date(b.date) - new Date(a.date)
+        );
+        
+        console.log('Annonces nettoyées et triées:', sortedAds);
+        setAds(sortedAds);
       } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
         setError('Erreur lors du chargement des annonces');
@@ -53,7 +60,8 @@ const Home = () => {
 
   const filteredAds = ads.filter(ad => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         ad.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ad.author.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !category || ad.category === category;
     const matchesDepartment = !department || ad.department === department;
     return matchesSearch && matchesCategory && matchesDepartment;
@@ -85,7 +93,7 @@ const Home = () => {
           <Grid item xs={12} sm={4}>
             <TextField
               fullWidth
-              label="Rechercher"
+              label="Rechercher (titre, description, auteur)"
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -106,6 +114,7 @@ const Home = () => {
                 <MenuItem value="beaute">Beauté</MenuItem>
                 <MenuItem value="accessoires">Accessoires</MenuItem>
                 <MenuItem value="services">Services</MenuItem>
+                <MenuItem value="alimentation">Alimentation & Boisson</MenuItem>
               </Select>
             </FormControl>
           </Grid>
