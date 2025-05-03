@@ -25,6 +25,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PetsIcon from '@mui/icons-material/Pets';
 
 const SUPPORT_PHONE = '+221774907982';
 
@@ -32,6 +33,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -62,8 +64,8 @@ const Navbar = () => {
     { text: 'Accueil', icon: <HomeIcon />, path: '/' },
     ...(isLoggedIn
       ? [
-          { text: 'Publier une annonce', icon: <AddIcon />, path: '/create-ad' },
-          { text: 'Mon tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
+          { text: 'Publier', icon: <AddIcon />, path: '/create-ad' },
+          { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
         ]
       : [{ text: "S'inscrire", icon: <PersonAddIcon />, path: '/register' }]),
   ];
@@ -85,6 +87,7 @@ const Navbar = () => {
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
+            display: { xs: 'none', sm: 'flex' },
           }}
         >
           {item.text}
@@ -102,6 +105,7 @@ const Navbar = () => {
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
+            display: { xs: 'none', sm: 'flex' },
           }}
         >
           Déconnexion
@@ -119,6 +123,7 @@ const Navbar = () => {
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
             },
+            display: { xs: 'none', sm: 'flex' },
           }}
         >
           Connexion
@@ -143,9 +148,10 @@ const Navbar = () => {
             boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
           },
           transition: 'all 0.3s ease',
+          display: { xs: 'none', sm: 'flex' },
         }}
       >
-        Support WhatsApp
+        Support
       </Button>
     </>
   );
@@ -157,50 +163,76 @@ const Navbar = () => {
         px: { xs: 1, sm: 2, md: 3 },
         minHeight: { xs: 56, sm: 64 }
       }}>
-        <Typography
-          variant="h6"
-          component={RouterLink}
-          to="/"
-          sx={{
-            textDecoration: 'none',
-            color: 'white',
-            fontWeight: 'bold',
-            letterSpacing: 1,
-            fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
-            textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
-          }}
-        >
-          UAM Marketplace
-        </Typography>
-
-        {!isMobile ? (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {renderMenuItems()}
-          </Box>
-        ) : (
-          <IconButton
-            color="inherit"
-            onClick={() => setDrawerOpen(true)}
-            sx={{ p: 1 }}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PetsIcon sx={{ 
+            fontSize: { xs: 24, sm: 28, md: 32 },
+            color: 'white' 
+          }} />
+          <Typography
+            variant="h6"
+            component={RouterLink}
+            to="/"
+            sx={{
+              textDecoration: 'none',
+              color: 'white',
+              fontWeight: 'bold',
+              letterSpacing: 1,
+              fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.5rem' },
+              textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
+              display: { xs: isSmallMobile ? 'none' : 'block', sm: 'block' }
+            }}
           >
-            <MenuIcon />
-          </IconButton>
-        )}
+            Keur Diourgui
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {!isMobile ? (
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {renderMenuItems()}
+            </Box>
+          ) : (
+            <>
+              <IconButton
+                color="inherit"
+                component="a"
+                href={`https://wa.me/${SUPPORT_PHONE}`}
+                target="_blank"
+                sx={{
+                  display: { xs: 'flex', sm: 'none' },
+                  backgroundColor: '#25D366',
+                  '&:hover': {
+                    backgroundColor: '#128C7E',
+                  },
+                }}
+              >
+                <WhatsAppIcon />
+              </IconButton>
+              <IconButton
+                color="inherit"
+                onClick={() => setDrawerOpen(true)}
+                sx={{ p: 1 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </>
+          )}
+        </Box>
       </Toolbar>
 
-    <Drawer
-      anchor="right"
-      open={drawerOpen}
-      onClose={() => setDrawerOpen(false)}
-      PaperProps={{
-        sx: {
-          width: '100%',
-          maxWidth: 300,
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            width: '100%',
+            maxWidth: 300,
             backgroundColor: '#1976d2',
-          color: 'white',
-        },
-      }}
-    >
+            color: 'white',
+          },
+        }}
+      >
         <Box sx={{ 
           p: 2, 
           display: 'flex', 
@@ -208,11 +240,11 @@ const Navbar = () => {
           gap: 2,
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}>
-        {isLoggedIn ? (
-          <>
-            <Avatar sx={{ bgcolor: 'secondary.main' }}>
+          {isLoggedIn ? (
+            <>
+              <Avatar sx={{ bgcolor: 'secondary.main' }}>
                 {user?.surname?.[0]}{user?.name?.[0]}
-            </Avatar>
+              </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography 
                   variant="subtitle1" 
@@ -224,7 +256,7 @@ const Navbar = () => {
                   }}
                 >
                   {user?.surname} {user?.name}
-              </Typography>
+                </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
@@ -234,35 +266,35 @@ const Navbar = () => {
                     textOverflow: 'ellipsis'
                   }}
                 >
-                {user?.email}
-              </Typography>
-            </Box>
-          </>
-        ) : (
+                  {user?.email}
+                </Typography>
+              </Box>
+            </>
+          ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-            <AccountCircleIcon sx={{ fontSize: 40 }} />
-            <Typography variant="subtitle1">Invité</Typography>
-          </Box>
-        )}
-      </Box>
+              <AccountCircleIcon sx={{ fontSize: 40 }} />
+              <Typography variant="subtitle1">Invité</Typography>
+            </Box>
+          )}
+        </Box>
 
-      <List sx={{ py: 0 }}>
-        {menuItems.map((item) => (
-          <ListItem
-            key={item.text}
-            button
+        <List sx={{ py: 0 }}>
+          {menuItems.map((item) => (
+            <ListItem
+              key={item.text}
+              button
               component={RouterLink}
-            to={item.path}
-          onClick={() => setDrawerOpen(false)}
-          sx={{
-            py: 2,
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
+              to={item.path}
+              onClick={() => setDrawerOpen(false)}
+              sx={{
+                py: 2,
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
               <ListItemText primary={item.text} />
-        </ListItem>
+            </ListItem>
           ))}
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
           {isLoggedIn ? (
@@ -284,10 +316,10 @@ const Navbar = () => {
           ) : (
             <ListItem
               button
-          component={RouterLink}
+              component={RouterLink}
               to="/login"
               onClick={() => setDrawerOpen(false)}
-          sx={{
+              sx={{
                 py: 2,
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
