@@ -395,9 +395,9 @@ const Home = () => {
                 onChange={(e) => setDepartment(e.target.value)}
               >
                 <MenuItem value="">Toutes les localisations</MenuItem>
-                {departments.map((dept) => (
-                  <MenuItem key={dept} value={dept}>
-                    {dept}
+                {regions.map((country) => (
+                  <MenuItem key={country.country} value={country.country}>
+                    {country.country}
                   </MenuItem>
                 ))}
               </Select>
