@@ -26,6 +26,16 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import AdCard from '../components/AdCard';
 
+const departments = [
+  'Abidjan',
+  'Bouaké',
+  'Daloa',
+  'Korhogo',
+  'San-Pédro',
+  'Yamoussoukro',
+  'Autre'
+];
+
 const categories = [
   { name: 'Chiens', value: 'chiens', icon: '🐕', color: '#2196f3' },
   { name: 'Lapins', value: 'lapins', icon: '🐰', color: '#e91e63' },
