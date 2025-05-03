@@ -24,23 +24,7 @@ import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { uploadImage } from '../services/imageService';
 import { useSnackbar } from 'notistack';
-
-const regions = [
-  'Dakar',
-  'Thiès',
-  'Diourbel',
-  'Saint-Louis',
-  'Tambacounda',
-  'Kaolack',
-  'Kolda',
-  'Ziguinchor',
-  'Louga',
-  'Fatick',
-  'Kaffrine',
-  'Matam',
-  'Kédougou',
-  'Sédhiou'
-];
+import { regions } from '../data/regions';
 
 const animalCategories = [
   { name: 'Chiens', value: 'chiens' },
@@ -60,12 +44,14 @@ const CreateAd = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     category: '',
     department: '',
+    country: '',
     whatsapp: '',
     images: [],
     race: '',
@@ -241,19 +227,46 @@ const CreateAd = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required error={error && !formData.country}>
+                <InputLabel>Pays</InputLabel>
+                <Select
+                  name="country"
+                  value={formData.country}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      country: e.target.value,
+                      department: ''
+                    }));
+                  }}
+                  label="Pays"
+                >
+                  {regions.map((country) => (
+                    <MenuItem key={country.country} value={country.country}>
+                      {country.country}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>Choisissez votre pays</FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth required error={error && !formData.department}>
-                <InputLabel>Localisation *</InputLabel>
+                <InputLabel>Région</InputLabel>
                 <Select
                   name="department"
                   value={formData.department}
-                  onChange={handleChange}
-                  label="Localisation *"
+                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  label="Région"
+                  disabled={!formData.country}
                 >
-                  {regions.map((region) => (
-                    <MenuItem key={region} value={region}>
-                      {region}
-                    </MenuItem>
-                  ))}
+                  {formData.country && regions
+                    .find(c => c.country === formData.country)
+                    ?.regions.map((region) => (
+                      <MenuItem key={region} value={region}>
+                        {region}
+                      </MenuItem>
+                    ))}
                 </Select>
                 <FormHelperText>Choisissez votre région</FormHelperText>
               </FormControl>

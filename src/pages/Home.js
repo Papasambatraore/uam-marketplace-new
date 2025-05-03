@@ -19,22 +19,15 @@ import {
   Card,
   CardContent,
   CardMedia,
+  IconButton,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AdCard from '../components/AdCard';
-
-const departments = [
-  'Abidjan',
-  'Bouaké',
-  'Daloa',
-  'Korhogo',
-  'San-Pédro',
-  'Yamoussoukro',
-  'Autre'
-];
+import { regions } from '../data/regions';
 
 const categories = [
   { name: 'Chiens', value: 'chiens', icon: '🐕', color: '#2196f3' },
@@ -69,6 +62,9 @@ const Home = () => {
     // Filtres spécifiques aux reptiles
     typeReptile: '',
   });
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchAds = () => {
@@ -104,6 +100,12 @@ const Home = () => {
     };
 
     fetchAds();
+  }, []);
+
+  useEffect(() => {
+    // Vérifier si l'utilisateur est admin
+    const user = JSON.parse(localStorage.getItem('user'));
+    setIsAdmin(user?.role === 'admin');
   }, []);
 
   const filteredAds = ads.filter(ad => {
@@ -270,6 +272,63 @@ const Home = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Marché des Animaux
+        </Typography>
+        {isAdmin && (
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AdminPanelSettingsIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Panel Admin
+          </Button>
+        )}
+      </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel>Pays</InputLabel>
+            <Select
+              value={selectedCountry}
+              onChange={(e) => {
+                setSelectedCountry(e.target.value);
+                setSelectedRegion('');
+              }}
+              label="Pays"
+            >
+              {regions.map((country) => (
+                <MenuItem key={country.country} value={country.country}>
+                  {country.country}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel>Région</InputLabel>
+            <Select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              label="Région"
+              disabled={!selectedCountry}
+            >
+              {selectedCountry && regions
+                .find(c => c.country === selectedCountry)
+                ?.regions.map((region) => (
+                  <MenuItem key={region} value={region}>
+                    {region}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" gutterBottom sx={{ 
