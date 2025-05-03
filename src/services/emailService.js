@@ -1,33 +1,42 @@
 import emailjs from '@emailjs/browser';
 
-const SERVICE_ID = 'YOUR_SERVICE_ID';
-const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+// Configuration EmailJS
+const SERVICE_ID = 'service_o4vovdo';
+const TEMPLATE_ID = 'template_j7uri9d';
+const PUBLIC_KEY = 'fXDHRT30EItp95hVq';
 
-export const sendPasswordResetEmail = async (email) => {
+const generateDefaultPassword = () => {
+  const adjectives = ['Bleu', 'Rouge', 'Vert', 'Jaune', 'Grand', 'Petit', 'Rapide', 'Lent'];
+  const nouns = ['Chien', 'Chat', 'Lion', 'Tigre', 'Oiseau', 'Poisson', 'Lapin', 'Cheval'];
+  const numbers = Math.floor(100 + Math.random() * 900);
+  
+  const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+  
+  return `${randomAdjective}${randomNoun}${numbers}`;
+};
+
+export const sendPasswordResetEmail = async (email, name, surname, code) => {
   try {
-    // Générer un mot de passe temporaire
-    const tempPassword = Math.random().toString(36).slice(-8);
-    
-    // Envoyer l'email
     const templateParams = {
       to_email: email,
-      temp_password: tempPassword,
+      to_name: `${surname} ${name}`,
+      reset_code: code,
+      from_name: 'Keur Diourgui'
     };
 
-    await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
-    
-    // Mettre à jour le mot de passe dans le localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const updatedUsers = users.map(user => {
-      if (user.email === email) {
-        return { ...user, password: tempPassword };
-      }
-      return user;
-    });
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-    
-    return { success: true, message: 'Email envoyé avec succès' };
+    const response = await emailjs.send(
+      SERVICE_ID,
+      TEMPLATE_ID,
+      templateParams,
+      PUBLIC_KEY
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: 'Email envoyé avec succès' };
+    } else {
+      throw new Error('Erreur lors de l\'envoi de l\'email');
+    }
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error);
     return { success: false, message: 'Erreur lors de l\'envoi de l\'email' };
