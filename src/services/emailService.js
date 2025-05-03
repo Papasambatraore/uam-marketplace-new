@@ -5,6 +5,9 @@ const SERVICE_ID = 'service_o4vovdo';
 const TEMPLATE_ID = 'template_j7uri9d';
 const PUBLIC_KEY = 'fXDHRT30EItp95hVq';
 
+// Initialisation d'EmailJS
+emailjs.init(PUBLIC_KEY);
+
 const generateDefaultPassword = () => {
   const adjectives = ['Bleu', 'Rouge', 'Vert', 'Jaune', 'Grand', 'Petit', 'Rapide', 'Lent'];
   const nouns = ['Chien', 'Chat', 'Lion', 'Tigre', 'Oiseau', 'Poisson', 'Lapin', 'Cheval'];
@@ -18,6 +21,7 @@ const generateDefaultPassword = () => {
 
 export const sendPasswordResetEmail = async (email, name, surname, code) => {
   try {
+    console.log('Initialisation EmailJS avec la clé publique:', PUBLIC_KEY);
     console.log('Tentative d\'envoi d\'email avec les paramètres:', {
       email,
       name,
@@ -35,6 +39,11 @@ export const sendPasswordResetEmail = async (email, name, surname, code) => {
     };
 
     console.log('Paramètres du template:', templateParams);
+
+    // Vérification de l'initialisation
+    if (!emailjs) {
+      throw new Error('EmailJS n\'est pas initialisé correctement');
+    }
 
     const response = await emailjs.send(
       SERVICE_ID,
