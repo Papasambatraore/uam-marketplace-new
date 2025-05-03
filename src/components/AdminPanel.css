@@ -120,6 +120,32 @@ h2 {
   color: #555;
 }
 
+.default-password {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.password-mask {
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+.show-password-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.3s;
+}
+
+.show-password-btn:hover {
+  background: #5a6268;
+}
+
 .reset-password-btn {
   background: #007bff;
   color: white;

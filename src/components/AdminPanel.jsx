@@ -85,7 +85,16 @@ const AdminPanel = () => {
               <div className="user-info">
                 <p><strong>Nom:</strong> {user.surname} {user.name}</p>
                 <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Mot de passe par défaut:</strong> {user.defaultPassword}</p>
+                <p className="default-password">
+                  <strong>Mot de passe par défaut:</strong> 
+                  <span className="password-mask">••••••••••</span>
+                  <button 
+                    className="show-password-btn"
+                    onClick={() => alert(`Mot de passe par défaut: ${user.defaultPassword}`)}
+                  >
+                    Afficher
+                  </button>
+                </p>
               </div>
               <button 
                 className="reset-password-btn"
