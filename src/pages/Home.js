@@ -27,13 +27,12 @@ import AddIcon from '@mui/icons-material/Add';
 import AdCard from '../components/AdCard';
 
 const categories = [
-  { name: 'Livres', value: 'livres', icon: '📚', color: '#2196f3' },
-  { name: 'Informatique', value: 'informatique', icon: '💻', color: '#4caf50' },
-  { name: 'Vêtements', value: 'vetements', icon: '👕', color: '#f44336' },
-  { name: 'Beauté', value: 'beaute', icon: '💄', color: '#e91e63' },
-  { name: 'Accessoires', value: 'accessoires', icon: '👜', color: '#9c27b0' },
-  { name: 'Services', value: 'services', icon: '🔧', color: '#ff9800' },
-  { name: 'Alimentation & Boisson', value: 'alimentation', icon: '🍽️', color: '#795548' },
+  { name: 'Chiens', value: 'chiens', icon: '🐕', color: '#2196f3' },
+  { name: 'Lapins', value: 'lapins', icon: '🐰', color: '#e91e63' },
+  { name: 'Volailles', value: 'volailles', icon: '🐔', color: '#4caf50' },
+  { name: 'Moutons', value: 'moutons', icon: '🐑', color: '#9c27b0' },
+  { name: 'Reptiles', value: 'reptiles', icon: '🦎', color: '#ff9800' },
+  { name: 'Autres', value: 'autres', icon: '🐾', color: '#795548' },
 ];
 
 const Home = () => {
@@ -45,6 +44,21 @@ const Home = () => {
   const [category, setCategory] = useState('');
   const [department, setDepartment] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
+  const [filters, setFilters] = useState({
+    race: '',
+    prixMin: '',
+    prixMax: '',
+    // Filtres spécifiques aux chiens
+    taille: '',
+    // Filtres spécifiques aux volailles
+    typeVolailles: '',
+    // Filtres spécifiques aux moutons
+    ageMouton: '',
+    // Filtres spécifiques aux lapins
+    raceLapin: '',
+    // Filtres spécifiques aux reptiles
+    typeReptile: '',
+  });
 
   useEffect(() => {
     const fetchAds = () => {
@@ -88,7 +102,26 @@ const Home = () => {
                          ad.author.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !category || ad.category === category;
     const matchesDepartment = !department || ad.department === department;
-    return matchesSearch && matchesCategory && matchesDepartment;
+    const matchesRace = !filters.race || ad.race?.toLowerCase().includes(filters.race.toLowerCase());
+    const matchesPrixMin = !filters.prixMin || Number(ad.price) >= Number(filters.prixMin);
+    const matchesPrixMax = !filters.prixMax || Number(ad.price) <= Number(filters.prixMax);
+    
+    // Filtres spécifiques par catégorie
+    let matchesSpecificFilters = true;
+    if (category === 'chiens' && filters.taille) {
+      matchesSpecificFilters = ad.taille === filters.taille;
+    } else if (category === 'volailles' && filters.typeVolailles) {
+      matchesSpecificFilters = ad.typeVolailles === filters.typeVolailles;
+    } else if (category === 'moutons' && filters.ageMouton) {
+      matchesSpecificFilters = ad.ageMouton === filters.ageMouton;
+    } else if (category === 'lapins' && filters.raceLapin) {
+      matchesSpecificFilters = ad.raceLapin === filters.raceLapin;
+    } else if (category === 'reptiles' && filters.typeReptile) {
+      matchesSpecificFilters = ad.typeReptile === filters.typeReptile;
+    }
+
+    return matchesSearch && matchesCategory && matchesDepartment && 
+           matchesRace && matchesPrixMin && matchesPrixMax && matchesSpecificFilters;
   });
 
   const handleCreateAd = () => {
@@ -103,6 +136,110 @@ const Home = () => {
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
     setCategory(categories[newValue].value);
+  };
+
+  const handleFilterChange = (name, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const renderSpecificFilters = () => {
+    switch (category) {
+      case 'chiens':
+        return (
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Taille</InputLabel>
+              <Select
+                value={filters.taille}
+                onChange={(e) => handleFilterChange('taille', e.target.value)}
+                label="Taille"
+              >
+                <MenuItem value="">Toutes les tailles</MenuItem>
+                <MenuItem value="petit">Petit</MenuItem>
+                <MenuItem value="moyen">Moyen</MenuItem>
+                <MenuItem value="grand">Grand</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        );
+      case 'volailles':
+        return (
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Type de volaille</InputLabel>
+              <Select
+                value={filters.typeVolailles}
+                onChange={(e) => handleFilterChange('typeVolailles', e.target.value)}
+                label="Type de volaille"
+              >
+                <MenuItem value="">Tous les types</MenuItem>
+                <MenuItem value="poule">Poule</MenuItem>
+                <MenuItem value="dinde">Dinde</MenuItem>
+                <MenuItem value="canard">Canard</MenuItem>
+                <MenuItem value="oie">Oie</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        );
+      case 'moutons':
+        return (
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Âge</InputLabel>
+              <Select
+                value={filters.ageMouton}
+                onChange={(e) => handleFilterChange('ageMouton', e.target.value)}
+                label="Âge"
+              >
+                <MenuItem value="">Tous les âges</MenuItem>
+                <MenuItem value="agneau">Agneau</MenuItem>
+                <MenuItem value="adulte">Adulte</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        );
+      case 'lapins':
+        return (
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Race</InputLabel>
+              <Select
+                value={filters.raceLapin}
+                onChange={(e) => handleFilterChange('raceLapin', e.target.value)}
+                label="Race"
+              >
+                <MenuItem value="">Toutes les races</MenuItem>
+                <MenuItem value="nain">Nain</MenuItem>
+                <MenuItem value="bélier">Bélier</MenuItem>
+                <MenuItem value="géant">Géant</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        );
+      case 'reptiles':
+        return (
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Type de reptile</InputLabel>
+              <Select
+                value={filters.typeReptile}
+                onChange={(e) => handleFilterChange('typeReptile', e.target.value)}
+                label="Type de reptile"
+              >
+                <MenuItem value="">Tous les types</MenuItem>
+                <MenuItem value="serpent">Serpent</MenuItem>
+                <MenuItem value="lézard">Lézard</MenuItem>
+                <MenuItem value="tortue">Tortue</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        );
+      default:
+        return null;
+    }
   };
 
   if (loading) {
@@ -182,24 +319,51 @@ const Home = () => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
-              <InputLabel>Département</InputLabel>
+              <InputLabel>Localisation</InputLabel>
               <Select
                 value={department}
-                label="Département"
+                label="Localisation"
                 onChange={(e) => setDepartment(e.target.value)}
               >
-                <MenuItem value="">Tous</MenuItem>
-                <MenuItem value="Droit">Droit</MenuItem>
-                <MenuItem value="Économie">Économie</MenuItem>
-                <MenuItem value="Gestion">Gestion</MenuItem>
-                <MenuItem value="Lettres">Lettres</MenuItem>
-                <MenuItem value="Sciences">Sciences</MenuItem>
-                <MenuItem value="Sciences de l'éducation">Sciences de l'éducation</MenuItem>
-                <MenuItem value="Sciences de la santé">Sciences de la santé</MenuItem>
-                <MenuItem value="Sciences sociales">Sciences sociales</MenuItem>
+                <MenuItem value="">Toutes les localisations</MenuItem>
+                {departments.map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Race"
+              variant="outlined"
+              value={filters.race}
+              onChange={(e) => handleFilterChange('race', e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Prix minimum (FCFA)"
+              variant="outlined"
+              value={filters.prixMin}
+              onChange={(e) => handleFilterChange('prixMin', e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Prix maximum (FCFA)"
+              variant="outlined"
+              value={filters.prixMax}
+              onChange={(e) => handleFilterChange('prixMax', e.target.value)}
+            />
+          </Grid>
+          {renderSpecificFilters()}
         </Grid>
       </Paper>
 

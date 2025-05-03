@@ -37,19 +37,17 @@ const StyledCardMedia = styled(CardMedia)({
 
 const getCategoryColor = (category) => {
   switch (category) {
-    case 'livres':
+    case 'chiens':
       return 'primary.light';
-    case 'informatique':
-      return 'success.light';
-    case 'vetements':
-      return 'error.light';
-    case 'beaute':
+    case 'lapins':
       return 'pink.light';
-    case 'accessoires':
+    case 'volailles':
+      return 'success.light';
+    case 'moutons':
       return 'purple.light';
-    case 'services':
+    case 'reptiles':
       return 'orange.light';
-    case 'alimentation':
+    case 'autres':
       return 'brown.light';
     default:
       return 'grey.light';
@@ -69,10 +67,10 @@ const AdCard = ({ ad }) => {
   const handleWhatsAppClick = (e) => {
     e.stopPropagation();
     const phoneNumber = ad.whatsapp.replace(/\D/g, '');
-    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"\n\n` +
+    const message = `Bonjour, je suis intéressé par votre ${ad.category} "${ad.title}"\n\n` +
                    `Prix: ${ad.price} FCFA\n` +
-                   `Catégorie: ${ad.category}\n` +
-                   `Département: ${ad.department}\n\n` +
+                   `Race: ${ad.race || 'Non spécifiée'}\n` +
+                   `Localisation: ${ad.department}\n\n` +
                    `Est-ce que cette annonce est toujours disponible ?`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -113,63 +111,45 @@ const AdCard = ({ ad }) => {
               bgcolor: 'grey.200',
             }}
           >
-            <Typography color="text.secondary">
+            <Typography variant="h6" color="text.secondary">
               Aucune image
             </Typography>
           </Box>
         )}
-        {imageError && (
-          <Box
-            sx={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'grey.200',
-            }}
-          >
-            <Typography color="text.secondary">
-              Image non disponible
-            </Typography>
-          </Box>
-        )}
-        <IconButton
+        <Box
           sx={{
             position: 'absolute',
             top: 8,
             right: 8,
-            bgcolor: 'rgba(255, 255, 255, 0.8)',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.9)',
-            },
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFavorite(!isFavorite);
+            zIndex: 1,
           }}
         >
-          <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
-        </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFavorite(!isFavorite);
+            }}
+            sx={{
+              bgcolor: 'background.paper',
+              '&:hover': {
+                bgcolor: 'background.paper',
+              },
+            }}
+          >
+            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
+          </IconButton>
+        </Box>
       </StyledCardMedia>
       <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ bgcolor: 'primary.main', mr: 1 }}>
-            {ad.author.charAt(0).toUpperCase()}
-          </Avatar>
-          <Typography variant="subtitle2" color="text.secondary">
-            {ad.author}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography variant="h6" component="h2" noWrap>
+            {ad.title}
+          </Typography>
+          <Typography variant="h6" color="primary">
+            {ad.price} FCFA
           </Typography>
         </Box>
-        <Typography gutterBottom variant="h6" component="div" noWrap>
-          {ad.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {ad.description.length > 100
-            ? `${ad.description.substring(0, 100)}...`
-            : ad.description}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
           <Chip
             label={ad.category}
             size="small"
@@ -178,33 +158,37 @@ const AdCard = ({ ad }) => {
               color: 'white',
             }}
           />
-          <Chip
-            label={ad.department}
-            size="small"
-            sx={{
-              bgcolor: 'secondary.light',
-              color: 'white',
-            }}
-          />
+          {ad.race && (
+            <Chip
+              label={ad.race}
+              size="small"
+              variant="outlined"
+            />
+          )}
         </Box>
-        <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-          {ad.price} FCFA
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          {ad.department}
         </Typography>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<WhatsAppIcon />}
-          fullWidth
-          onClick={handleWhatsAppClick}
-          sx={{
-            bgcolor: '#25D366',
-            '&:hover': {
-              bgcolor: '#128C7E',
-            },
-          }}
-        >
-          Contacter
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar
+              src={ad.authorAvatar}
+              sx={{ width: 24, height: 24, mr: 1 }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {ad.author}
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<WhatsAppIcon />}
+            onClick={handleWhatsAppClick}
+            sx={{ minWidth: 'auto' }}
+          >
+            Contacter
+          </Button>
+        </Box>
       </CardContent>
     </StyledCard>
   );

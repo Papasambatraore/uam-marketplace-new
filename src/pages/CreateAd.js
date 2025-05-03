@@ -25,14 +25,22 @@ import { uploadImage } from '../services/imageService';
 import { categories } from '../constants/categories';
 
 const departments = [
-  'Droit',
-  'Économie',
-  'Gestion',
-  'Lettres',
-  'Sciences',
-  'Sciences de l\'éducation',
-  'Sciences de la santé',
-  'Sciences sociales',
+  'Abidjan',
+  'Bouaké',
+  'Daloa',
+  'Korhogo',
+  'San-Pédro',
+  'Yamoussoukro',
+  'Autre'
+];
+
+const animalCategories = [
+  { name: 'Chiens', value: 'chiens' },
+  { name: 'Lapins', value: 'lapins' },
+  { name: 'Volailles', value: 'volailles' },
+  { name: 'Moutons', value: 'moutons' },
+  { name: 'Reptiles', value: 'reptiles' },
+  { name: 'Autres', value: 'autres' },
 ];
 
 const Input = styled('input')({
@@ -51,6 +59,7 @@ const CreateAd = () => {
     department: '',
     whatsapp: '',
     images: [],
+    race: '',
   });
 
   useEffect(() => {
@@ -99,34 +108,30 @@ const CreateAd = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    if (!formData.title || !formData.description || !formData.price || !formData.category || !formData.department || !formData.whatsapp) {
+      setError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
 
     try {
-      // Vérifier si l'utilisateur est toujours connecté
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) {
-        throw new Error('Vous devez être connecté pour créer une annonce');
-      }
+      setLoading(true);
+      setError('');
 
-      // Récupérer les annonces existantes
-      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      
-      // Créer la nouvelle annonce
+      const user = JSON.parse(localStorage.getItem('user'));
       const newAd = {
-        id: Date.now().toString(),
         ...formData,
-        author: user.email,
+        id: Date.now().toString(),
+        author: user.name,
+        authorAvatar: user.avatar,
         date: new Date().toISOString(),
       };
 
-      // Ajouter la nouvelle annonce
+      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
       localStorage.setItem('ads', JSON.stringify([...existingAds, newAd]));
 
-      // Rediriger vers la page d'accueil
-      navigate('/');
+      navigate('/mes-annonces');
     } catch (error) {
-      setError(error.message);
+      setError('Erreur lors de la création de l\'annonce');
     } finally {
       setLoading(false);
     }
@@ -141,23 +146,11 @@ const CreateAd = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: { xs: 2, sm: 4 }, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
-        <Typography variant="h4" gutterBottom sx={{ 
-          color: '#1976d2', 
-          fontWeight: 'bold',
-          fontSize: { xs: '1.5rem', sm: '2rem' },
-          mb: 3
-        }}>
-          Créer une nouvelle annonce
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Créer une annonce
         </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -168,60 +161,41 @@ const CreateAd = () => {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                sx={{ mb: 2 }}
               />
             </Grid>
-
             <Grid item xs={12}>
               <TextField
                 fullWidth
+                multiline
+                rows={4}
                 label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                multiline
-                rows={4}
                 required
-                sx={{ mb: 2 }}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                type="number"
                 label="Prix (FCFA)"
                 name="price"
-                type="number"
                 value={formData.price}
                 onChange={handleChange}
                 required
-                sx={{ mb: 2 }}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Numéro WhatsApp"
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleChange}
-                required
-                placeholder="Ex: 221774907982"
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth sx={{ mb: 2 }}>
+              <FormControl fullWidth required>
                 <InputLabel>Catégorie</InputLabel>
                 <Select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  required
+                  label="Catégorie"
                 >
-                  {categories.map((category) => (
+                  {animalCategories.map((category) => (
                     <MenuItem key={category.value} value={category.value}>
                       {category.name}
                     </MenuItem>
@@ -229,15 +203,23 @@ const CreateAd = () => {
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Département</InputLabel>
+              <TextField
+                fullWidth
+                label="Race"
+                name="race"
+                value={formData.race}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Localisation</InputLabel>
                 <Select
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  required
+                  label="Localisation"
                 >
                   {departments.map((dept) => (
                     <MenuItem key={dept} value={dept}>
@@ -247,62 +229,54 @@ const CreateAd = () => {
                 </Select>
               </FormControl>
             </Grid>
-
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Numéro WhatsApp"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
             <Grid item xs={12}>
               <Box sx={{ mb: 2 }}>
-                <input
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  id="contained-button-file"
-                  type="file"
-                  multiple
-                  onChange={handleImageChange}
-                />
-                <label htmlFor="contained-button-file">
+                <Typography variant="subtitle1" gutterBottom>
+                  Photos de l'animal
+                </Typography>
+                <label htmlFor="image-upload">
+                  <Input
+                    accept="image/*"
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
                   <Button
                     variant="contained"
                     component="span"
-                    fullWidth
                     disabled={loading}
-                    sx={{ 
-                      height: { xs: 40, sm: 48 },
-                      fontSize: { xs: '0.8rem', sm: '1rem' }
-                    }}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Ajouter des photos'}
+                    Ajouter des photos
                   </Button>
                 </label>
               </Box>
-              <ImageList sx={{ width: '100%', height: 200 }} cols={3} rowHeight={164}>
-                {formData.images.map((imageUrl, index) => (
+              {loading && <CircularProgress />}
+              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+              <ImageList cols={3} rowHeight={164}>
+                {formData.images.map((image, index) => (
                   <ImageListItem key={index}>
                     <img
-                      src={imageUrl}
-                      alt={`Preview ${index}`}
+                      src={image}
+                      alt={`Upload ${index + 1}`}
                       loading="lazy"
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        transition: 'opacity 0.3s ease-in-out'
-                      }}
-                      onLoad={(e) => {
-                        e.target.style.opacity = 1;
-                      }}
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/150?text=Image+non+chargée';
-                      }}
                     />
                     <IconButton
                       sx={{
                         position: 'absolute',
                         top: 0,
                         right: 0,
-                        color: 'white',
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        },
+                        bgcolor: 'rgba(255, 255, 255, 0.8)',
                       }}
                       onClick={() => handleRemoveImage(index)}
                     >
@@ -312,7 +286,6 @@ const CreateAd = () => {
                 ))}
               </ImageList>
             </Grid>
-
             <Grid item xs={12}>
               <Button
                 type="submit"
@@ -320,10 +293,6 @@ const CreateAd = () => {
                 color="primary"
                 fullWidth
                 disabled={loading}
-                sx={{ 
-                  height: { xs: 40, sm: 48 },
-                  fontSize: { xs: '0.9rem', sm: '1rem' }
-                }}
               >
                 {loading ? <CircularProgress size={24} /> : 'Publier l\'annonce'}
               </Button>
