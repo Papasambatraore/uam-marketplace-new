@@ -22,7 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { uploadImage } from '../services/imageService';
-import { categories } from '../constants/categories';
 
 const departments = [
   'Abidjan',
