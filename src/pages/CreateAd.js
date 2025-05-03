@@ -23,6 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { uploadImage } from '../services/imageService';
+import { useSnackbar } from 'notistack';
 
 const regions = [
   'Dakar',
@@ -56,6 +57,7 @@ const Input = styled('input')({
 
 const CreateAd = () => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -126,8 +128,8 @@ const CreateAd = () => {
     }
 
     try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
       const user = JSON.parse(localStorage.getItem('user'));
       const newAd = {
@@ -141,10 +143,8 @@ const CreateAd = () => {
       const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
       localStorage.setItem('ads', JSON.stringify([...existingAds, newAd]));
 
-      setSnackbar({
-        open: true,
-        message: 'Votre annonce a été publiée avec succès !',
-        severity: 'success'
+      enqueueSnackbar('Votre annonce a été publiée avec succès !', {
+        variant: 'success'
       });
 
       setTimeout(() => {
@@ -277,12 +277,12 @@ const CreateAd = () => {
                 </Typography>
                 <label htmlFor="image-upload">
                   <Input
-                    accept="image/*"
+                  accept="image/*"
                     id="image-upload"
-                    type="file"
-                    multiple
-                    onChange={handleImageChange}
-                  />
+                  type="file"
+                  multiple
+                  onChange={handleImageChange}
+                />
                   <Button
                     variant="contained"
                     component="span"

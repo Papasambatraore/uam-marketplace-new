@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { SnackbarProvider } from 'notistack';
 import CssBaseline from '@mui/material/CssBaseline';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -34,29 +35,31 @@ const theme = createTheme({
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/ads/:id" element={<AdDetails />} />
-          <Route path="/create-ad" element={<CreateAd />} />
-          <Route path="/publier-annonce" element={<CreateAd />} />
-          <Route path="/edit-ad/:id" element={<EditAd />} />
-          <Route path="/my-ads" element={<MyAds />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/annonce/:id" element={<AdDetail />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
+      <SnackbarProvider maxSnack={3}>
+        <CssBaseline />
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/ads/:id" element={<AdDetails />} />
+            <Route path="/create-ad" element={<CreateAd />} />
+            <Route path="/publier-annonce" element={<CreateAd />} />
+            <Route path="/edit-ad/:id" element={<EditAd />} />
+            <Route path="/my-ads" element={<MyAds />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/annonce/:id" element={<AdDetail />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }
