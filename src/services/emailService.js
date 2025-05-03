@@ -19,6 +19,15 @@ const generateDefaultPassword = () => {
   return `${randomAdjective}${randomNoun}${numbers}`;
 };
 
+// Génération de 10 mots de passe par défaut
+export const generateDefaultPasswords = () => {
+  const passwords = [];
+  for (let i = 0; i < 10; i++) {
+    passwords.push(generateDefaultPassword());
+  }
+  return passwords;
+};
+
 export const sendPasswordResetEmail = async (email, name, surname, code) => {
   try {
     console.log('Initialisation EmailJS avec la clé publique:', PUBLIC_KEY);
