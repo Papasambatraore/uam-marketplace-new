@@ -17,6 +17,7 @@ import {
   ImageListItem,
   IconButton,
   Alert,
+  FormHelperText,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -115,7 +116,12 @@ const CreateAd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.price || !formData.category || !formData.department || !formData.whatsapp) {
-      setError('Veuillez remplir tous les champs obligatoires');
+      setError('Veuillez remplir tous les champs obligatoires marqués d\'un astérisque (*)');
+      return;
+    }
+
+    if (formData.images.length === 0) {
+      setError('Veuillez ajouter au moins une photo de l\'animal');
       return;
     }
 
@@ -135,9 +141,17 @@ const CreateAd = () => {
       const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
       localStorage.setItem('ads', JSON.stringify([...existingAds, newAd]));
 
-      navigate('/mes-annonces');
+      setSnackbar({
+        open: true,
+        message: 'Votre annonce a été publiée avec succès !',
+        severity: 'success'
+      });
+
+      setTimeout(() => {
+        navigate('/mes-annonces');
+      }, 2000);
     } catch (error) {
-      setError('Erreur lors de la création de l\'annonce');
+      setError('Une erreur est survenue lors de la publication de votre annonce. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -162,11 +176,13 @@ const CreateAd = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Titre de l'annonce"
+                label="Titre de l'annonce *"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
                 required
+                helperText="Donnez un titre clair et descriptif à votre annonce"
+                error={error && !formData.title}
               />
             </Grid>
             <Grid item xs={12}>
@@ -174,32 +190,36 @@ const CreateAd = () => {
                 fullWidth
                 multiline
                 rows={4}
-                label="Description"
+                label="Description *"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 required
+                helperText="Décrivez l'animal en détail (race, âge, comportement, etc.)"
+                error={error && !formData.description}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 type="number"
-                label="Prix (FCFA)"
+                label="Prix (FCFA) *"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
                 required
+                helperText="Indiquez le prix en FCFA"
+                error={error && !formData.price}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Catégorie</InputLabel>
+              <FormControl fullWidth required error={error && !formData.category}>
+                <InputLabel>Catégorie *</InputLabel>
                 <Select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  label="Catégorie"
+                  label="Catégorie *"
                 >
                   {animalCategories.map((category) => (
                     <MenuItem key={category.value} value={category.value}>
@@ -207,6 +227,7 @@ const CreateAd = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                <FormHelperText>Choisissez la catégorie de l'animal</FormHelperText>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -216,16 +237,17 @@ const CreateAd = () => {
                 name="race"
                 value={formData.race}
                 onChange={handleChange}
+                helperText="Indiquez la race de l'animal si connue"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Localisation</InputLabel>
+              <FormControl fullWidth required error={error && !formData.department}>
+                <InputLabel>Localisation *</InputLabel>
                 <Select
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  label="Localisation"
+                  label="Localisation *"
                 >
                   {regions.map((region) => (
                     <MenuItem key={region} value={region}>
@@ -233,16 +255,19 @@ const CreateAd = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                <FormHelperText>Choisissez votre région</FormHelperText>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Numéro WhatsApp"
+                label="Numéro WhatsApp *"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleChange}
                 required
+                helperText="Format: 77XXXXXXXX"
+                error={error && !formData.whatsapp}
               />
             </Grid>
             <Grid item xs={12}>

@@ -121,7 +121,7 @@ const Dashboard = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate('/create-ad')}
+          onClick={() => navigate('/publier-annonce')}
           sx={{ mb: 3 }}
         >
           Publier une nouvelle annonce
@@ -136,7 +136,7 @@ const Dashboard = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate('/create-ad')}
+            onClick={() => navigate('/publier-annonce')}
             sx={{ mt: 2 }}
           >
             Publier votre première annonce
