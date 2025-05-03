@@ -137,7 +137,7 @@ const Home = () => {
   const handleCreateAd = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
-      navigate('/creer-annonce');
+      navigate('/publier-annonce');
     } else {
       navigate('/login', { state: { from: '/publier-annonce' } });
     }
