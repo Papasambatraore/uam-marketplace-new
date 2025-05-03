@@ -56,8 +56,7 @@ const getCategoryColor = (category) => {
 
 const AdCard = ({ ad }) => {
   const navigate = useNavigate();
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleCardClick = () => {
@@ -66,20 +65,17 @@ const AdCard = ({ ad }) => {
 
   const handleWhatsAppClick = (e) => {
     e.stopPropagation();
-    const phoneNumber = ad.whatsapp.replace(/\D/g, '');
-    const message = `Bonjour, je suis intéressé par votre ${ad.category} "${ad.title}"\n\n` +
-                   `Prix: ${ad.price} FCFA\n` +
-                   `Race: ${ad.race || 'Non spécifiée'}\n` +
-                   `Localisation: ${ad.department}\n\n` +
-                   `Est-ce que cette annonce est toujours disponible ?`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(`https://wa.me/${ad.whatsapp}`, '_blank');
   };
 
   return (
     <StyledCard onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
-      <StyledCardMedia>
-        {!imageLoaded && !imageError && (
+      <StyledCardMedia
+        image={ad.images[0]}
+        title={ad.title}
+        onLoad={() => setIsLoading(false)}
+      >
+        {isLoading && (
           <Skeleton
             variant="rectangular"
             width="100%"
@@ -87,57 +83,32 @@ const AdCard = ({ ad }) => {
             animation="wave"
           />
         )}
-        {ad.images && ad.images.length > 0 ? (
-          <img
-            src={ad.images[0]}
-            alt={ad.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: imageLoaded ? 1 : 0,
-            }}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        ) : (
           <Box
-            sx={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'grey.200',
-            }}
-          >
-            <Typography variant="h6" color="text.secondary">
-              Aucune image
-            </Typography>
-          </Box>
-        )}
-        <Box
           sx={{
             position: 'absolute',
             top: 8,
             right: 8,
-            zIndex: 1,
+            display: 'flex',
+            gap: 1,
           }}
         >
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFavorite(!isFavorite);
-            }}
+          <Chip
+            label={ad.category}
+            size="small"
             sx={{
-              bgcolor: 'background.paper',
-              '&:hover': {
-                bgcolor: 'background.paper',
-              },
+              backgroundColor: getCategoryColor(ad.category),
+              color: 'white',
+              fontWeight: 'bold',
             }}
-          >
-            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
-          </IconButton>
+          />
+          <Chip
+            label={`${ad.department}, ${ad.country}`}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              color: 'white',
+            }}
+          />
         </Box>
       </StyledCardMedia>
       <CardContent sx={{ flexGrow: 1 }}>
@@ -150,20 +121,12 @@ const AdCard = ({ ad }) => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-          <Chip
-            label={ad.category}
-            size="small"
-            sx={{
-              bgcolor: getCategoryColor(ad.category),
-              color: 'white',
-            }}
-          />
           {ad.race && (
-            <Chip
+          <Chip
               label={ad.race}
-              size="small"
+            size="small"
               variant="outlined"
-            />
+          />
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -179,15 +142,15 @@ const AdCard = ({ ad }) => {
               {ad.author}
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<WhatsAppIcon />}
-            onClick={handleWhatsAppClick}
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<WhatsAppIcon />}
+          onClick={handleWhatsAppClick}
             sx={{ minWidth: 'auto' }}
-          >
-            Contacter
-          </Button>
+        >
+          Contacter
+        </Button>
         </Box>
       </CardContent>
     </StyledCard>

@@ -47,7 +47,12 @@ const AdDetail = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = ad.whatsapp.replace(/\D/g, '');
-    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"`;
+    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"\n\n` +
+                   `Prix: ${ad.price} FCFA\n` +
+                   `Catégorie: ${ad.category}\n` +
+                   `Département: ${ad.department}\n` +
+                   `Description: ${ad.description}\n\n` +
+                   `Est-ce que cette annonce est toujours disponible ?`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -93,7 +98,8 @@ const AdDetail = () => {
                 <ImageListItem key={index}>
                   <img
                     src={image}
-                    alt={`${ad.title} - Image ${index + 1}`}
+                    alt={ad.title}
+                    className="ad-image"
                     loading="lazy"
                     style={{
                       width: '100%',

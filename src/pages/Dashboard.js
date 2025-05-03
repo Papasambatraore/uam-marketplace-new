@@ -1,248 +1,275 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Paper,
   Typography,
+  Box,
   Grid,
   Card,
   CardContent,
-  CardMedia,
-  CardActions,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Button,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Box,
-  Chip,
-  Snackbar,
-  Alert,
-  ImageList,
-  ImageListItem,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import LockIcon from '@mui/icons-material/Lock';
 import { useNavigate } from 'react-router-dom';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { useSnackbar } from 'notistack';
+import { isAdmin } from '../services/authService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const [ads, setAds] = useState([]);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedAd, setSelectedAd] = useState(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [user, setUser] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogType, setDialogType] = useState(''); // 'edit' or 'delete'
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+    department: '',
+    country: '',
+    whatsapp: '',
+    race: '',
+  });
+
+  const loadData = useCallback(() => {
+    try {
+      // Charger les annonces
+      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+      setAds(storedAds);
+
+      // Charger les utilisateurs
+      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      setUsers(storedUsers);
+    } catch (error) {
+      enqueueSnackbar('Erreur lors du chargement des données', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  }, [enqueueSnackbar]);
 
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (!isLoggedIn || !currentUser) {
-      navigate('/login');
+    // Vérifier si l'utilisateur est admin
+    if (!isAdmin()) {
+      enqueueSnackbar('Accès non autorisé', { variant: 'error' });
+      navigate('/');
       return;
     }
 
-    setUser(currentUser);
+    // Charger les données
+    loadData();
+  }, [enqueueSnackbar, loadData, navigate]);
 
-    // Charger les annonces de l'utilisateur
-    const allAds = JSON.parse(localStorage.getItem('ads') || '[]');
-    const userAds = allAds.filter(ad => ad.userId === currentUser.id);
-    setAds(userAds);
-    };
-
-    checkLoginStatus();
-    window.addEventListener('storage', checkLoginStatus);
-    return () => window.removeEventListener('storage', checkLoginStatus);
-  }, [navigate]);
-
-  const handleDeleteClick = (ad) => {
+  const handleEdit = (ad) => {
     setSelectedAd(ad);
-    setOpenDeleteDialog(true);
+    setFormData({
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      category: ad.category,
+      department: ad.department,
+      country: ad.country,
+      whatsapp: ad.whatsapp,
+      race: ad.race,
+    });
+    setDialogType('edit');
+    setOpenDialog(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (selectedAd) {
-      // Filtrer les annonces pour enlever celle à supprimer
-      const updatedAds = ads.filter(ad => ad.id !== selectedAd.id);
-      setAds(updatedAds);
-      
-      // Mettre à jour le localStorage
-      const allAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const updatedAllAds = allAds.filter(ad => ad.id !== selectedAd.id);
-      localStorage.setItem('ads', JSON.stringify(updatedAllAds));
+  const handleDelete = (ad) => {
+    setSelectedAd(ad);
+    setDialogType('delete');
+    setOpenDialog(true);
+  };
 
-      setOpenDeleteDialog(false);
-      setSelectedAd(null);
-      
-      setSnackbarMessage('Annonce supprimée avec succès');
-      setOpenSnackbar(true);
+  const handleSave = () => {
+    try {
+      const updatedAds = ads.map(ad => 
+        ad.id === selectedAd.id ? { ...ad, ...formData } : ad
+      );
+      localStorage.setItem('ads', JSON.stringify(updatedAds));
+      setAds(updatedAds);
+      enqueueSnackbar('Annonce mise à jour avec succès', { variant: 'success' });
+      setOpenDialog(false);
+    } catch (error) {
+      enqueueSnackbar('Erreur lors de la mise à jour', { variant: 'error' });
     }
   };
 
-  const handleWhatsAppClick = (whatsapp) => {
-    window.open(`https://wa.me/${whatsapp}`, '_blank');
+  const handleDeleteConfirm = () => {
+    try {
+      const updatedAds = ads.filter(ad => ad.id !== selectedAd.id);
+      localStorage.setItem('ads', JSON.stringify(updatedAds));
+      setAds(updatedAds);
+      enqueueSnackbar('Annonce supprimée avec succès', { variant: 'success' });
+      setOpenDialog(false);
+    } catch (error) {
+      enqueueSnackbar('Erreur lors de la suppression', { variant: 'error' });
+    }
   };
 
-  const getCategoryColor = (category) => {
-    const colors = {
-      livres: '#4caf50',
-      informatique: '#2196f3',
-      vetements: '#f44336',
-      beaute: '#e91e63',
-      accessoires: '#9c27b0',
-      services: '#ff9800',
-    };
-    return colors[category] || '#607d8b';
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1">
-          Bonjour {user?.surname} {user?.name}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<LockIcon />}
-          onClick={() => navigate('/change-password')}
-        >
-          Changer le mot de passe
-        </Button>
-      </Box>
-      <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Mon tableau de bord
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
-          {user && `Bienvenue ${user.surname} ${user.name}`}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/publier-annonce')}
-          sx={{ mb: 3 }}
-        >
-          Publier une nouvelle annonce
-        </Button>
-      </Paper>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Panel Administrateur
+      </Typography>
 
-      {ads.length === 0 ? (
-        <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary">
-            Vous n'avez pas encore publié d'annonces
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate('/publier-annonce')}
-            sx={{ mt: 2 }}
-          >
-            Publier votre première annonce
-          </Button>
-        </Paper>
-      ) : (
-        <Grid container spacing={3}>
-          {ads.map((ad) => (
-            <Grid item xs={12} sm={6} md={4} key={ad.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                {ad.imageUrls && ad.imageUrls.length > 0 ? (
-                  <ImageList sx={{ width: '100%', height: 200 }} cols={1} rowHeight={200}>
-                    <ImageListItem>
-                      <img
-                        src={ad.imageUrls[0]}
-                        alt={ad.title}
-                        loading="lazy"
-                      />
-                    </ImageListItem>
-                  </ImageList>
-                ) : (
-                <CardMedia
-                  component="img"
-                  height="200"
-                    image="https://via.placeholder.com/300x200"
-                  alt={ad.title}
-                />
-                )}
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {ad.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {ad.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                    <Chip
-                      label={ad.category}
-                      sx={{
-                        backgroundColor: getCategoryColor(ad.category),
-                        color: 'white',
-                      }}
-                    />
-                    <Chip
-                      label={`${ad.price} FCFA`}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Publié le: {new Date(ad.date).toLocaleDateString()}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    startIcon={<WhatsAppIcon />}
-                    onClick={() => handleWhatsAppClick(ad.whatsapp)}
-                    sx={{ flexGrow: 1 }}
-                  >
-                    Contacter
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<DeleteIcon />}
-                    color="error"
-                    onClick={() => handleDeleteClick(ad)}
-                  >
-                    Supprimer
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Statistiques
+        </Typography>
+              <Typography variant="body1">
+                Nombre total d'annonces : {ads.length}
+        </Typography>
+              <Typography variant="body1">
+                Nombre total d'utilisateurs : {users.length}
+        </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-      )}
 
-      <Dialog
-        open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
-      >
-        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Gestion des annonces
+          </Typography>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Titre</TableCell>
+                    <TableCell>Catégorie</TableCell>
+                    <TableCell>Prix</TableCell>
+                    <TableCell>Localisation</TableCell>
+                    <TableCell>Auteur</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {ads.map((ad) => (
+                    <TableRow key={ad.id}>
+                      <TableCell>{ad.title}</TableCell>
+                      <TableCell>{ad.category}</TableCell>
+                      <TableCell>{ad.price} FCFA</TableCell>
+                      <TableCell>{ad.department}, {ad.country}</TableCell>
+                      <TableCell>{ad.author}</TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => handleEdit(ad)} color="primary">
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(ad)} color="error">
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+        </Paper>
+        </Grid>
+      </Grid>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {dialogType === 'edit' ? 'Modifier l\'annonce' : 'Supprimer l\'annonce'}
+        </DialogTitle>
         <DialogContent>
-          Êtes-vous sûr de vouloir supprimer cette annonce ?
+          {dialogType === 'edit' ? (
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Titre"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Prix (FCFA)"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Catégorie</InputLabel>
+                  <Select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    label="Catégorie"
+                  >
+                    <MenuItem value="chiens">Chiens</MenuItem>
+                    <MenuItem value="lapins">Lapins</MenuItem>
+                    <MenuItem value="volailles">Volailles</MenuItem>
+                    <MenuItem value="moutons">Moutons</MenuItem>
+                    <MenuItem value="reptiles">Reptiles</MenuItem>
+                    <MenuItem value="autres">Autres</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          ) : (
+            <Typography>
+              Êtes-vous sûr de vouloir supprimer cette annonce : "{selectedAd?.title}" ?
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Annuler</Button>
-          <Button onClick={handleConfirmDelete} color="error">
-            Supprimer
+          <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
+          <Button
+            onClick={dialogType === 'edit' ? handleSave : handleDeleteConfirm}
+            color={dialogType === 'edit' ? 'primary' : 'error'}
+            variant="contained"
+          >
+            {dialogType === 'edit' ? 'Enregistrer' : 'Supprimer'}
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-      >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

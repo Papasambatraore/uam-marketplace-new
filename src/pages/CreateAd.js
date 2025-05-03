@@ -263,10 +263,10 @@ const CreateAd = () => {
                   {formData.country && regions
                     .find(c => c.country === formData.country)
                     ?.regions.map((region) => (
-                      <MenuItem key={region} value={region}>
-                        {region}
-                      </MenuItem>
-                    ))}
+                    <MenuItem key={region} value={region}>
+                      {region}
+                    </MenuItem>
+                  ))}
                 </Select>
                 <FormHelperText>Choisissez votre région</FormHelperText>
               </FormControl>

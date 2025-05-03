@@ -125,7 +125,7 @@ function Register() {
 
       setSnackbar({
         open: true,
-        message: 'Inscription réussie ! Bienvenue sur UAM Marketplace.',
+        message: 'Inscription réussie ! Bienvenue sur Keur Diourgui.',
         severity: 'success'
       });
 

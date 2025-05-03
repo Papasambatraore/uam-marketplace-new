@@ -666,4 +666,41 @@ h2 {
   .cancel-btn {
     width: 100%;
   }
+}
+
+.change-password-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-left: 10px;
+}
+
+.change-password-btn:hover {
+  background: #218838;
+}
+
+.password-form {
+  margin: 20px 0;
+}
+
+.password-form .form-group {
+  margin-bottom: 15px;
+}
+
+.password-form label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.password-form input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
 } 

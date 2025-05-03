@@ -16,10 +16,6 @@ import {
   InputAdornment,
   Tabs,
   Tab,
-  Card,
-  CardContent,
-  CardMedia,
-  IconButton,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -47,32 +43,12 @@ const Home = () => {
   const [category, setCategory] = useState('');
   const [department, setDepartment] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
-  const [filters, setFilters] = useState({
-    race: '',
-    prixMin: '',
-    prixMax: '',
-    // Filtres spécifiques aux chiens
-    taille: '',
-    // Filtres spécifiques aux volailles
-    typeVolailles: '',
-    // Filtres spécifiques aux moutons
-    ageMouton: '',
-    // Filtres spécifiques aux lapins
-    raceLapin: '',
-    // Filtres spécifiques aux reptiles
-    typeReptile: '',
-  });
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchAds = () => {
       try {
         const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-        console.log('Annonces récupérées:', storedAds);
-        
-        // Vérification et nettoyage des données
         const cleanedAds = storedAds.map(ad => ({
           ...ad,
           images: Array.isArray(ad.images) ? ad.images : [],
@@ -84,12 +60,10 @@ const Home = () => {
           date: ad.date || new Date().toISOString(),
         }));
         
-        // Tri par date (les plus récentes en premier)
         const sortedAds = cleanedAds.sort((a, b) => 
           new Date(b.date) - new Date(a.date)
         );
         
-        console.log('Annonces nettoyées et triées:', sortedAds);
         setAds(sortedAds);
       } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
@@ -103,37 +77,17 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est admin
     const user = JSON.parse(localStorage.getItem('user'));
     setIsAdmin(user?.role === 'admin');
   }, []);
 
   const filteredAds = ads.filter(ad => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.author.toLowerCase().includes(searchTerm.toLowerCase());
+                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !category || ad.category === category;
     const matchesDepartment = !department || ad.department === department;
-    const matchesRace = !filters.race || ad.race?.toLowerCase().includes(filters.race.toLowerCase());
-    const matchesPrixMin = !filters.prixMin || Number(ad.price) >= Number(filters.prixMin);
-    const matchesPrixMax = !filters.prixMax || Number(ad.price) <= Number(filters.prixMax);
-    
-    // Filtres spécifiques par catégorie
-    let matchesSpecificFilters = true;
-    if (category === 'chiens' && filters.taille) {
-      matchesSpecificFilters = ad.taille === filters.taille;
-    } else if (category === 'volailles' && filters.typeVolailles) {
-      matchesSpecificFilters = ad.typeVolailles === filters.typeVolailles;
-    } else if (category === 'moutons' && filters.ageMouton) {
-      matchesSpecificFilters = ad.ageMouton === filters.ageMouton;
-    } else if (category === 'lapins' && filters.raceLapin) {
-      matchesSpecificFilters = ad.raceLapin === filters.raceLapin;
-    } else if (category === 'reptiles' && filters.typeReptile) {
-      matchesSpecificFilters = ad.typeReptile === filters.typeReptile;
-    }
 
-    return matchesSearch && matchesCategory && matchesDepartment && 
-           matchesRace && matchesPrixMin && matchesPrixMax && matchesSpecificFilters;
+    return matchesSearch && matchesCategory && matchesDepartment;
   });
 
   const handleCreateAd = () => {
@@ -150,304 +104,64 @@ const Home = () => {
     setCategory(categories[newValue].value);
   };
 
-  const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const renderSpecificFilters = () => {
-    switch (category) {
-      case 'chiens':
-        return (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Taille</InputLabel>
-              <Select
-                value={filters.taille}
-                onChange={(e) => handleFilterChange('taille', e.target.value)}
-                label="Taille"
-              >
-                <MenuItem value="">Toutes les tailles</MenuItem>
-                <MenuItem value="petit">Petit</MenuItem>
-                <MenuItem value="moyen">Moyen</MenuItem>
-                <MenuItem value="grand">Grand</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        );
-      case 'volailles':
-        return (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Type de volaille</InputLabel>
-              <Select
-                value={filters.typeVolailles}
-                onChange={(e) => handleFilterChange('typeVolailles', e.target.value)}
-                label="Type de volaille"
-              >
-                <MenuItem value="">Tous les types</MenuItem>
-                <MenuItem value="poule">Poule</MenuItem>
-                <MenuItem value="dinde">Dinde</MenuItem>
-                <MenuItem value="canard">Canard</MenuItem>
-                <MenuItem value="oie">Oie</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        );
-      case 'moutons':
-        return (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Âge</InputLabel>
-              <Select
-                value={filters.ageMouton}
-                onChange={(e) => handleFilterChange('ageMouton', e.target.value)}
-                label="Âge"
-              >
-                <MenuItem value="">Tous les âges</MenuItem>
-                <MenuItem value="agneau">Agneau</MenuItem>
-                <MenuItem value="adulte">Adulte</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        );
-      case 'lapins':
-        return (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Race</InputLabel>
-              <Select
-                value={filters.raceLapin}
-                onChange={(e) => handleFilterChange('raceLapin', e.target.value)}
-                label="Race"
-              >
-                <MenuItem value="">Toutes les races</MenuItem>
-                <MenuItem value="nain">Nain</MenuItem>
-                <MenuItem value="bélier">Bélier</MenuItem>
-                <MenuItem value="géant">Géant</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        );
-      case 'reptiles':
-        return (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Type de reptile</InputLabel>
-              <Select
-                value={filters.typeReptile}
-                onChange={(e) => handleFilterChange('typeReptile', e.target.value)}
-                label="Type de reptile"
-              >
-                <MenuItem value="">Tous les types</MenuItem>
-                <MenuItem value="serpent">Serpent</MenuItem>
-                <MenuItem value="lézard">Lézard</MenuItem>
-                <MenuItem value="tortue">Tortue</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        );
-      default:
-        return null;
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Marché des Animaux
-        </Typography>
-        {isAdmin && (
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<AdminPanelSettingsIcon />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Panel Admin
-          </Button>
-        )}
-      </Box>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <InputLabel>Pays</InputLabel>
-            <Select
-              value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
-                setSelectedRegion('');
-              }}
-              label="Pays"
-            >
-              {regions.map((country) => (
-                <MenuItem key={country.country} value={country.country}>
-                  {country.country}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <InputLabel>Région</InputLabel>
-            <Select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              label="Région"
-              disabled={!selectedCountry}
-            >
-              {selectedCountry && regions
-                .find(c => c.country === selectedCountry)
-                ?.regions.map((region) => (
-                  <MenuItem key={region} value={region}>
-                    {region}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-
-      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" gutterBottom sx={{ 
-            color: 'primary.main',
-            fontWeight: 'bold',
-            fontSize: { xs: '1.5rem', sm: '2rem' }
-          }}>
-            Annonces récentes
-          </Typography>
-          {localStorage.getItem('user') ? (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCreateAd}
-              startIcon={<AddIcon />}
-              sx={{ 
-                minWidth: 200,
-                height: { xs: 40, sm: 48 },
-                fontSize: { xs: '0.8rem', sm: '1rem' }
-              }}
-            >
-              Créer une annonce
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate('/login', { state: { from: '/publier-annonce' } })}
-              startIcon={<AddIcon />}
-              sx={{ 
-                minWidth: 200,
-                height: { xs: 40, sm: 48 },
-                fontSize: { xs: '0.8rem', sm: '1rem' }
-              }}
-            >
-              Se connecter pour créer une annonce
-            </Button>
-          )}
-        </Box>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
+      <Box sx={{ mb: 4 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Rechercher (titre, description, auteur)"
               variant="outlined"
+              placeholder="Rechercher une annonce..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon color="action" />
+                    <SearchIcon />
                   </InputAdornment>
                 ),
               }}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Localisation</InputLabel>
+              <InputLabel>Département</InputLabel>
               <Select
                 value={department}
-                label="Localisation"
                 onChange={(e) => setDepartment(e.target.value)}
+                label="Département"
               >
-                <MenuItem value="">Toutes les localisations</MenuItem>
-                {regions.map((country) => (
-                  <MenuItem key={country.country} value={country.country}>
-                    {country.country}
+                <MenuItem value="">Tous les départements</MenuItem>
+                {regions.map((region) => (
+                  <MenuItem key={region.code} value={region.code}>
+                    {region.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
+          <Grid item xs={12} md={3}>
+            <Button
               fullWidth
-              label="Race"
-              variant="outlined"
-              value={filters.race}
-              onChange={(e) => handleFilterChange('race', e.target.value)}
-            />
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleCreateAd}
+            >
+              Publier une annonce
+            </Button>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Prix minimum (FCFA)"
-              variant="outlined"
-              value={filters.prixMin}
-              onChange={(e) => handleFilterChange('prixMin', e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              type="number"
-              label="Prix maximum (FCFA)"
-              variant="outlined"
-              value={filters.prixMax}
-              onChange={(e) => handleFilterChange('prixMax', e.target.value)}
-            />
-          </Grid>
-          {renderSpecificFilters()}
         </Grid>
-      </Paper>
+      </Box>
 
-      <Paper elevation={3} sx={{ mb: 4, borderRadius: 2 }}>
+      <Box sx={{ mb: 4 }}>
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
-          sx={{
-            '& .MuiTab-root': {
-              minWidth: 120,
-              fontSize: { xs: '0.8rem', sm: '1rem' },
-            },
-          }}
+          aria-label="Catégories"
         >
           {categories.map((cat, index) => (
             <Tab
@@ -458,28 +172,21 @@ const Home = () => {
                   <span>{cat.name}</span>
                 </Box>
               }
-              sx={{
-                color: cat.color,
-                '&.Mui-selected': {
-                  color: cat.color,
-                  fontWeight: 'bold',
-                },
-              }}
             />
           ))}
         </Tabs>
-      </Paper>
+      </Box>
 
-      {filteredAds.length === 0 ? (
-        <Paper elevation={3} sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
-          <Typography variant="h6" color="text.secondary">
-            Aucune annonce ne correspond à vos critères
-          </Typography>
-        </Paper>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
       ) : (
         <Grid container spacing={3}>
           {filteredAds.map((ad) => (
-            <Grid item key={ad.id} xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} key={ad.id}>
               <AdCard ad={ad} />
             </Grid>
           ))}

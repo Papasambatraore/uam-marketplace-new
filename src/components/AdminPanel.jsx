@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateDefaultPasswords } from '../services/emailService';
+import { generateDefaultPasswords, sendPasswordResetEmail } from '../services/emailService';
 import './AdminPanel.css';
 
 const AdminPanel = () => {
@@ -21,6 +21,10 @@ const AdminPanel = () => {
   const [selectedUserForReset, setSelectedUserForReset] = useState(null);
   const [resetPassword, setResetPassword] = useState('');
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [selectedUserForChange, setSelectedUserForChange] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [users, setUsers] = useState([
     { id: 1, name: 'John', surname: 'Doe', email: 'john@example.com', defaultPassword: 'BleuChien123', status: 'active' },
@@ -139,6 +143,55 @@ const AdminPanel = () => {
     }
   };
 
+  const handleChangePassword = (user) => {
+    setSelectedUserForChange(user);
+    setShowChangePassword(true);
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const handlePasswordChangeSubmit = async () => {
+    if (newPassword !== confirmPassword) {
+      addNotification('Les mots de passe ne correspondent pas', 'error');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      addNotification('Le mot de passe doit contenir au moins 8 caractères', 'error');
+      return;
+    }
+
+    try {
+      const result = await sendPasswordResetEmail(
+        selectedUserForChange.email,
+        selectedUserForChange.name,
+        selectedUserForChange.surname,
+        newPassword
+      );
+
+      if (result.success) {
+        addNotification('Mot de passe changé avec succès', 'success');
+        setShowChangePassword(false);
+        setSelectedUserForChange(null);
+      } else {
+        addNotification(`Erreur lors du changement de mot de passe: ${result.message}`, 'error');
+      }
+    } catch (error) {
+      addNotification('Erreur lors du changement de mot de passe', 'error');
+    }
+  };
+
+  const generateSecurePassword = () => {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="login-container">
@@ -251,6 +304,12 @@ const AdminPanel = () => {
                   >
                     Réinitialiser le mot de passe
                   </button>
+                  <button 
+                    className="change-password-btn"
+                    onClick={() => handleChangePassword(user)}
+                  >
+                    Changer le mot de passe
+                  </button>
                 </div>
               </div>
             ))}
@@ -331,6 +390,52 @@ const AdminPanel = () => {
                 onClick={() => {
                   setShowResetPassword(false);
                   setSelectedUserForReset(null);
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showChangePassword && (
+        <div className="modal-overlay">
+          <div className="password-reset-modal">
+            <h3>Changement de mot de passe</h3>
+            <p>Changer le mot de passe pour {selectedUserForChange.name} {selectedUserForChange.surname}</p>
+            <div className="password-form">
+              <div className="form-group">
+                <label>Nouveau mot de passe:</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Confirmer le mot de passe:</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="send-email-btn"
+                onClick={handlePasswordChangeSubmit}
+              >
+                Changer le mot de passe
+              </button>
+              <button 
+                className="cancel-btn"
+                onClick={() => {
+                  setShowChangePassword(false);
+                  setSelectedUserForChange(null);
                 }}
               >
                 Annuler

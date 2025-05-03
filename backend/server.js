@@ -27,13 +27,13 @@ app.post('/api/send-welcome-email', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Bienvenue sur UAM Marketplace',
+      subject: 'Bienvenue sur Keur Diourgui',
       html: `
         <h1>Bienvenue ${name} !</h1>
-        <p>Merci de vous être inscrit sur UAM Marketplace.</p>
+        <p>Merci de vous être inscrit sur Keur Diourgui.</p>
         <p>Vous pouvez maintenant commencer à publier des annonces et à interagir avec la communauté.</p>
         <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
-        <p>Cordialement,<br>L'équipe UAM Marketplace</p>
+        <p>Cordialement,<br>L'équipe Keur Diourgui</p>
       `
     };
 
@@ -55,16 +55,16 @@ app.post('/api/send-verification-email', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Vérification de votre email - UAM Marketplace',
+      subject: 'Vérification de votre email - Keur Diourgui',
       html: `
         <h1>Bonjour ${name} !</h1>
-        <p>Merci de vous être inscrit sur UAM Marketplace.</p>
+        <p>Merci de vous être inscrit sur Keur Diourgui.</p>
         <p>Pour finaliser votre inscription, veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :</p>
         <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; background-color: #1976d2; color: white; text-decoration: none; border-radius: 5px;">
           Vérifier mon email
         </a>
-        <p>Si vous n'avez pas créé de compte sur UAM Marketplace, vous pouvez ignorer cet email.</p>
-        <p>Cordialement,<br>L'équipe UAM Marketplace</p>
+        <p>Si vous n'avez pas créé de compte sur Keur Diourgui, vous pouvez ignorer cet email.</p>
+        <p>Cordialement,<br>L'équipe Keur Diourgui</p>
       `
     };
 
@@ -121,18 +121,18 @@ app.post('/api/send-reset-code', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Code de réinitialisation de mot de passe - UAM Marketplace',
+      subject: 'Code de réinitialisation de mot de passe - Keur Diourgui',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1976d2;">Bonjour ${surname} ${name},</h2>
-          <p>Vous avez demandé la réinitialisation de votre mot de passe sur UAM Marketplace.</p>
+          <p>Vous avez demandé la réinitialisation de votre mot de passe sur Keur Diourgui.</p>
           <p>Votre code de réinitialisation est :</p>
           <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
             <h1 style="color: #1976d2; margin: 0;">${code}</h1>
           </div>
           <p>Ce code est valable pendant 1 heure.</p>
           <p>Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet email.</p>
-          <p>Cordialement,<br>L'équipe UAM Marketplace</p>
+          <p>Cordialement,<br>L'équipe Keur Diourgui</p>
         </div>
       `
     };

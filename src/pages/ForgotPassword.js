@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { sendPasswordResetEmail } from '../services/emailService';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   marginTop: theme.spacing(8),
@@ -56,21 +57,15 @@ const ForgotPassword = () => {
       }));
 
       // Envoyer l'email avec le code
-      const response = await fetch('http://localhost:5000/api/send-reset-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          code: resetCode,
-          name: user.name,
-          surname: user.surname
-        }),
-      });
+      const result = await sendPasswordResetEmail(
+        email,
+        user.name,
+        user.surname,
+        resetCode
+      );
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'envoi de l\'email');
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       setSuccess(true);

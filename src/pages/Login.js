@@ -52,10 +52,10 @@ const Login = () => {
     try {
       const user = await login(formData.email, formData.password);
       enqueueSnackbar('Connexion réussie !', { variant: 'success' });
-      
+
       // Rediriger vers la page précédente ou la page d'accueil
-      const from = location.state?.from?.pathname || '/';
-      navigate(from);
+        const from = location.state?.from?.pathname || '/';
+        navigate(from);
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error' });
     } finally {
@@ -70,43 +70,43 @@ const Login = () => {
           Connexion
         </Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
+            <TextField
             margin="normal"
-            required
-            fullWidth
+              required
+              fullWidth
             id="email"
             label="Adresse email"
-            name="email"
+              name="email"
             autoComplete="email"
             autoFocus
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <TextField
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <TextField
             margin="normal"
-            required
-            fullWidth
+              required
+              fullWidth
             name="password"
-            label="Mot de passe"
-            type="password"
+              label="Mot de passe"
+              type="password"
             id="password"
             autoComplete="current-password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Se connecter'}
-          </Button>
+              value={formData.password}
+              onChange={handleChange}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Se connecter'}
+            </Button>
           <Grid container>
             <Grid item xs>
               <Link href="/forgot-password" variant="body2">
-                Mot de passe oublié ?
+                  Mot de passe oublié ?
               </Link>
             </Grid>
             <Grid item>
@@ -115,7 +115,7 @@ const Login = () => {
               </Link>
             </Grid>
           </Grid>
-        </Box>
+          </Box>
       </StyledPaper>
     </Container>
   );
