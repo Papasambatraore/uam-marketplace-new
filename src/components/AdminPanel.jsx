@@ -270,7 +270,7 @@ const AdminPanel = () => {
                   <p><strong>Date:</strong> {ad.date}</p>
                   <p><strong>Statut:</strong> 
                     <span className={`status-badge ${ad.status}`}>
-                      {ad.status === 'active' ? 'Active' : 'En attente'}
+                      {ad.status === 'active' ? 'Active' : ad.status === 'pending' ? 'En attente' : 'Rejetée'}
                     </span>
                   </p>
                 </div>
@@ -306,37 +306,19 @@ const AdminPanel = () => {
         </div>
       )}
 
-      {showResetPassword && selectedUserForReset && (
+      {showResetPassword && (
         <div className="modal-overlay">
           <div className="password-reset-modal">
             <h3>Réinitialisation du mot de passe</h3>
-            <p>Nouveau mot de passe pour {selectedUserForReset.surname} {selectedUserForReset.name}</p>
-            
+            <p>Un nouveau mot de passe a été généré pour {selectedUserForReset.name} {selectedUserForReset.surname}</p>
             <div className="password-display">
-              <input
-                type="text"
-                value={resetPassword}
-                readOnly
+              <input 
+                type="text" 
+                value={resetPassword} 
+                readOnly 
                 className="password-input"
               />
-              <button 
-                className="copy-btn"
-                onClick={() => copyToClipboard(resetPassword)}
-                title="Copier le mot de passe"
-              >
-                📋
-              </button>
             </div>
-
-            <div className="password-strength">
-              <div className="strength-indicator">
-                <div className={`strength-bar ${validatePasswordStrength(resetPassword).isValid ? 'strong' : 'weak'}`}></div>
-              </div>
-              <span className="strength-text">
-                {validatePasswordStrength(resetPassword).isValid ? 'Mot de passe fort' : 'Mot de passe faible'}
-              </span>
-            </div>
-
             <div className="modal-actions">
               <button 
                 className="send-email-btn"
