@@ -14,6 +14,9 @@ import {
   useMediaQuery,
   Avatar,
   Divider,
+  Menu,
+  MenuItem,
+  ListItemIcon,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -26,8 +29,19 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PetsIcon from '@mui/icons-material/Pets';
+import { styled } from '@mui/material/styles';
+import { logout, isAdmin } from '../services/authService';
+import { useSnackbar } from 'notistack';
 
 const SUPPORT_PHONE = '+221774907982';
+
+const StyledLink = styled(RouterLink)(({ theme }) => ({
+  color: 'inherit',
+  textDecoration: 'none',
+  '&:hover': {
+    color: theme.palette.primary.light,
+  },
+}));
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -37,6 +51,9 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -52,12 +69,26 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
+    logout();
+    enqueueSnackbar('Déconnexion réussie', { variant: 'success' });
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUser(null);
     navigate('/');
     window.location.reload();
+  };
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const menuItems = [
@@ -69,6 +100,10 @@ const Navbar = () => {
         ]
       : [{ text: "S'inscrire", icon: <PersonAddIcon />, path: '/register' }]),
   ];
+
+  if (isAdmin()) {
+    menuItems.unshift({ text: 'Panel Admin', icon: <DashboardIcon />, path: '/dashboard' });
+  }
 
   const renderMenuItems = () => (
     <>
@@ -156,6 +191,63 @@ const Navbar = () => {
     </>
   );
 
+  const renderMobileMenu = (
+    <Drawer
+      anchor="right"
+      open={mobileMenuOpen}
+      onClose={handleMobileMenuToggle}
+    >
+      <Box sx={{ width: 250 }}>
+        <List>
+          {menuItems.map((item) => (
+            <ListItem
+              button
+              key={item.text}
+              component={RouterLink}
+              to={item.path}
+              onClick={() => {
+                if (item.onClick) {
+                  item.onClick();
+                }
+                handleMobileMenuToggle();
+              }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    </Drawer>
+  );
+
+  const renderDesktopMenu = (
+    <>
+      <Button
+        color="inherit"
+        component={RouterLink}
+        to="/"
+        sx={{ mr: 2 }}
+      >
+        Accueil
+      </Button>
+      <Button
+        color="inherit"
+        component={RouterLink}
+        to="/search"
+        startIcon={<DashboardIcon />}
+        sx={{ mr: 2 }}
+      >
+        Rechercher
+      </Button>
+      {!isMobile && (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {renderMenuItems()}
+        </Box>
+      )}
+    </>
+  );
+
   return (
     <AppBar position="sticky" elevation={1} sx={{ backgroundColor: '#1976d2' }}>
       <Toolbar sx={{ 
@@ -168,30 +260,28 @@ const Navbar = () => {
             fontSize: { xs: 24, sm: 28, md: 32 },
             color: 'white' 
           }} />
-          <Typography
-            variant="h6"
-            component={RouterLink}
-            to="/"
-            sx={{
-              textDecoration: 'none',
-              color: 'white',
-              fontWeight: 'bold',
-              letterSpacing: 1,
+        <Typography
+          variant="h6"
+          component={StyledLink}
+          to="/"
+          sx={{
+            textDecoration: 'none',
+            color: 'white',
+            fontWeight: 'bold',
+            letterSpacing: 1,
               fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.5rem' },
-              textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
               display: { xs: isSmallMobile ? 'none' : 'block', sm: 'block' }
-            }}
-          >
+          }}
+        >
             Keur Diourgui
-          </Typography>
+        </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {!isMobile ? (
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {renderMenuItems()}
-            </Box>
-          ) : (
+        {!isMobile ? (
+          renderDesktopMenu
+        ) : (
             <>
               <IconButton
                 color="inherit"
@@ -208,31 +298,31 @@ const Navbar = () => {
               >
                 <WhatsAppIcon />
               </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={() => setDrawerOpen(true)}
-                sx={{ p: 1 }}
-              >
-                <MenuIcon />
-              </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={handleMobileMenuToggle}
+            sx={{ p: 1 }}
+          >
+            <MenuIcon />
+          </IconButton>
             </>
-          )}
+        )}
         </Box>
       </Toolbar>
 
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            width: '100%',
-            maxWidth: 300,
+    <Drawer
+      anchor="right"
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+      PaperProps={{
+        sx: {
+          width: '100%',
+          maxWidth: 300,
             backgroundColor: '#1976d2',
-            color: 'white',
-          },
-        }}
-      >
+          color: 'white',
+        },
+      }}
+    >
         <Box sx={{ 
           p: 2, 
           display: 'flex', 
@@ -240,11 +330,11 @@ const Navbar = () => {
           gap: 2,
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}>
-          {isLoggedIn ? (
-            <>
-              <Avatar sx={{ bgcolor: 'secondary.main' }}>
+        {isLoggedIn ? (
+          <>
+            <Avatar sx={{ bgcolor: 'secondary.main' }}>
                 {user?.surname?.[0]}{user?.name?.[0]}
-              </Avatar>
+            </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography 
                   variant="subtitle1" 
@@ -256,7 +346,7 @@ const Navbar = () => {
                   }}
                 >
                   {user?.surname} {user?.name}
-                </Typography>
+              </Typography>
                 <Typography 
                   variant="body2" 
                   sx={{ 
@@ -266,35 +356,35 @@ const Navbar = () => {
                     textOverflow: 'ellipsis'
                   }}
                 >
-                  {user?.email}
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-              <AccountCircleIcon sx={{ fontSize: 40 }} />
-              <Typography variant="subtitle1">Invité</Typography>
+                {user?.email}
+              </Typography>
             </Box>
-          )}
-        </Box>
+          </>
+        ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+            <AccountCircleIcon sx={{ fontSize: 40 }} />
+            <Typography variant="subtitle1">Invité</Typography>
+          </Box>
+        )}
+      </Box>
 
-        <List sx={{ py: 0 }}>
-          {menuItems.map((item) => (
-            <ListItem
-              key={item.text}
-              button
+      <List sx={{ py: 0 }}>
+        {menuItems.map((item) => (
+          <ListItem
+            key={item.text}
+            button
               component={RouterLink}
-              to={item.path}
-              onClick={() => setDrawerOpen(false)}
-              sx={{
-                py: 2,
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
+            to={item.path}
+          onClick={() => setDrawerOpen(false)}
+          sx={{
+            py: 2,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+          }}
+        >
               <ListItemText primary={item.text} />
-            </ListItem>
+        </ListItem>
           ))}
           <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
           {isLoggedIn ? (
@@ -316,10 +406,10 @@ const Navbar = () => {
           ) : (
             <ListItem
               button
-              component={RouterLink}
+          component={RouterLink}
               to="/login"
               onClick={() => setDrawerOpen(false)}
-              sx={{
+          sx={{
                 py: 2,
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -360,6 +450,7 @@ const Navbar = () => {
           </ListItem>
         </List>
       </Drawer>
+      {mobileMenuOpen && renderMobileMenu}
     </AppBar>
   );
 };

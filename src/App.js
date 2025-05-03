@@ -20,6 +20,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
 import AdDetail from './pages/AdDetail';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme({
   palette: {
@@ -53,9 +54,16 @@ function App() {
             <Route path="/my-ads" element={<MyAds />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/search" element={<SearchResults />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/annonce/:id" element={<AdDetail />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
