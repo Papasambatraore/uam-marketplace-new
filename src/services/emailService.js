@@ -19,13 +19,55 @@ const generateDefaultPassword = () => {
   return `${randomAdjective}${randomNoun}${numbers}`;
 };
 
-// Génération de 10 mots de passe par défaut
-export const generateDefaultPasswords = () => {
+// Fonction pour générer un mot de passe sécurisé
+const generateSecurePassword = () => {
+  const length = 12;
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  
+  // Assurer au moins un caractère de chaque type
+  password += charset.match(/[A-Z]/)[0]; // Majuscule
+  password += charset.match(/[a-z]/)[0]; // Minuscule
+  password += charset.match(/[0-9]/)[0]; // Chiffre
+  password += charset.match(/[!@#$%^&*]/)[0]; // Caractère spécial
+  
+  // Compléter avec des caractères aléatoires
+  for (let i = password.length; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  
+  // Mélanger le mot de passe
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+};
+
+// Fonction pour générer plusieurs mots de passe par défaut
+export const generateDefaultPasswords = (count = 5) => {
   const passwords = [];
-  for (let i = 0; i < 10; i++) {
-    passwords.push(generateDefaultPassword());
+  for (let i = 0; i < count; i++) {
+    passwords.push(generateSecurePassword());
   }
   return passwords;
+};
+
+// Fonction pour valider la force d'un mot de passe
+export const validatePasswordStrength = (password) => {
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*]/.test(password);
+  const isLongEnough = password.length >= 8;
+
+  return {
+    isValid: hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar && isLongEnough,
+    strength: {
+      hasUpperCase,
+      hasLowerCase,
+      hasNumbers,
+      hasSpecialChar,
+      isLongEnough
+    }
+  };
 };
 
 export const sendPasswordResetEmail = async (email, name, surname, code) => {
@@ -48,7 +90,7 @@ export const sendPasswordResetEmail = async (email, name, surname, code) => {
     };
 
     console.log('Paramètres du template:', templateParams);
-
+    
     // Vérification de l'initialisation
     if (!emailjs) {
       throw new Error('EmailJS n\'est pas initialisé correctement');
@@ -64,7 +106,7 @@ export const sendPasswordResetEmail = async (email, name, surname, code) => {
     console.log('Réponse EmailJS:', response);
 
     if (response.status === 200) {
-      return { success: true, message: 'Email envoyé avec succès' };
+    return { success: true, message: 'Email envoyé avec succès' };
     } else {
       console.error('Erreur de statut:', response.status);
       throw new Error(`Erreur lors de l'envoi de l'email. Statut: ${response.status}`);
