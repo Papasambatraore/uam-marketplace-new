@@ -46,6 +46,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/ads/:id" element={<AdDetails />} />
           <Route path="/create-ad" element={<CreateAd />} />
+          <Route path="/publier-annonce" element={<CreateAd />} />
           <Route path="/edit-ad/:id" element={<EditAd />} />
           <Route path="/my-ads" element={<MyAds />} />
           <Route path="/favorites" element={<Favorites />} />

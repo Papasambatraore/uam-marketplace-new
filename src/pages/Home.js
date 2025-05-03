@@ -139,7 +139,7 @@ const Home = () => {
     if (user) {
       navigate('/creer-annonce');
     } else {
-      navigate('/connexion', { state: { from: '/creer-annonce' } });
+      navigate('/login', { state: { from: '/publier-annonce' } });
     }
   };
 
@@ -297,7 +297,7 @@ const Home = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate('/connexion', { state: { from: '/creer-annonce' } })}
+              onClick={() => navigate('/login', { state: { from: '/publier-annonce' } })}
               startIcon={<AddIcon />}
               sx={{ 
                 minWidth: 200,

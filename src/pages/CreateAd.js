@@ -23,14 +23,21 @@ import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { uploadImage } from '../services/imageService';
 
-const departments = [
-  'Abidjan',
-  'Bouaké',
-  'Daloa',
-  'Korhogo',
-  'San-Pédro',
-  'Yamoussoukro',
-  'Autre'
+const regions = [
+  'Dakar',
+  'Thiès',
+  'Diourbel',
+  'Saint-Louis',
+  'Tambacounda',
+  'Kaolack',
+  'Kolda',
+  'Ziguinchor',
+  'Louga',
+  'Fatick',
+  'Kaffrine',
+  'Matam',
+  'Kédougou',
+  'Sédhiou'
 ];
 
 const animalCategories = [
@@ -65,7 +72,7 @@ const CreateAd = () => {
     // Vérifier si l'utilisateur est connecté
     const user = localStorage.getItem('user');
     if (!user) {
-      navigate('/connexion', { state: { from: '/creer-annonce' } });
+      navigate('/login', { state: { from: '/publier-annonce' } });
     }
   }, [navigate]);
 
@@ -148,7 +155,7 @@ const CreateAd = () => {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Créer une annonce
+          Publier une annonce
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
@@ -220,9 +227,9 @@ const CreateAd = () => {
                   onChange={handleChange}
                   label="Localisation"
                 >
-                  {departments.map((dept) => (
-                    <MenuItem key={dept} value={dept}>
-                      {dept}
+                  {regions.map((region) => (
+                    <MenuItem key={region} value={region}>
+                      {region}
                     </MenuItem>
                   ))}
                 </Select>
