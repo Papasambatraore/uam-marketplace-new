@@ -28,6 +28,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AdCard from '../components/AdCard';
 import { regions } from '../data/regions';
+import { getAds } from '../services/firebaseService';
 
 const categories = [
   { name: 'Chiens', value: 'chiens', icon: '🐕', color: '#2196f3' },
@@ -67,26 +68,32 @@ const Home = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const fetchAds = () => {
+    const fetchAds = async () => {
       try {
-        const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-        console.log('Annonces récupérées:', storedAds);
+        setLoading(true);
+        const ads = await getAds();
+        console.log('Annonces récupérées de GitHub:', ads);
         
         // Vérification et nettoyage des données
-        const cleanedAds = storedAds.map(ad => ({
-          ...ad,
-          images: Array.isArray(ad.images) ? ad.images : [],
-          price: ad.price || '0',
-          category: ad.category || 'Non spécifié',
-          department: ad.department || 'Non spécifié',
-          country: ad.country || 'Non spécifié',
-          whatsapp: ad.whatsapp || '',
-          author: ad.author || 'Anonyme',
-          date: ad.date || new Date().toISOString(),
-          views: ad.views || 0,
-          status: 'active', // Forcer le statut à actif
-          isActive: true // Forcer l'activité
-        }));
+        const cleanedAds = ads.map(ad => {
+          console.log('Traitement de l\'annonce:', ad);
+          return {
+            ...ad,
+            id: ad.id || Math.random().toString(36).substr(2, 9),
+            images: Array.isArray(ad.images) ? ad.images : [],
+            price: ad.price || '0',
+            category: ad.category || 'Non spécifié',
+            department: ad.department || 'Non spécifié',
+            country: ad.country || 'Non spécifié',
+            whatsapp: ad.whatsapp || '',
+            author: ad.author || 'Anonyme',
+            date: ad.date || new Date().toISOString(),
+            views: ad.views || 0,
+            status: 'active',
+            isActive: true,
+            userId: ad.userId || 'anonymous'
+          };
+        });
         
         // Tri par date (les plus récentes en premier)
         const sortedAds = cleanedAds.sort((a, b) => 

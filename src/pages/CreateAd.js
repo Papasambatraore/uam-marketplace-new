@@ -30,7 +30,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { uploadImage } from '../services/imageService';
 import { useSnackbar } from 'notistack';
 import { regions } from '../data/regions';
-import { addAd } from '../services/githubService';
+import { addAd } from '../services/firebaseService';
 
 const animalCategories = [
   { name: 'Chiens', value: 'chiens' },

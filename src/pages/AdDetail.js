@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { getAds, updateAd } from '../services/firebaseService';
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -24,18 +25,30 @@ const AdDetail = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchAd = () => {
+    const fetchAd = async () => {
       try {
-        const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-        const foundAd = storedAds.find(ad => ad.id === parseInt(id));
+        console.log('Recherche de l\'annonce avec l\'ID:', id);
+        const ads = await getAds();
+        console.log('Annonces disponibles:', ads);
+        
+        // Recherche de l'annonce avec l'ID exact
+        const foundAd = ads.find(ad => ad.id === id);
+        console.log('Annonce trouvée:', foundAd);
         
         if (!foundAd) {
           throw new Error('Annonce non trouvée');
         }
 
-        setAd(foundAd);
+        // Mise à jour du compteur de vues
+        const updatedAd = {
+          ...foundAd,
+          views: (foundAd.views || 0) + 1
+        };
+        
+        await updateAd(updatedAd);
+        setAd(updatedAd);
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur lors de la récupération de l\'annonce:', error);
         setError(error.message);
       } finally {
         setLoading(false);
