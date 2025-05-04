@@ -30,11 +30,14 @@ import {
   Divider,
   TablePagination,
   Backdrop,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddIcon from '@mui/icons-material/Add';
 import { useSnackbar } from 'notistack';
 
 const Dashboard = () => {
@@ -63,50 +66,41 @@ const Dashboard = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loadingDetails, setLoadingDetails] = useState(false);
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      enqueueSnackbar('Veuillez vous connecter pour accéder au tableau de bord', { 
-        variant: 'info',
-        autoHideDuration: 3000
-      });
-      navigate('/login', { 
-        state: { 
-          from: '/dashboard',
-          message: 'Veuillez vous connecter pour accéder au tableau de bord'
-        } 
-      });
-      return;
-    }
-
-    loadData();
-  }, [navigate, enqueueSnackbar, localStorage.getItem('user')]);
+  const [activeTab, setActiveTab] = useState(0);
 
   const loadData = useCallback(() => {
     try {
-      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
-      
-      if (user) {
-        // Filtrer uniquement les annonces de l'utilisateur connecté
-        const userAds = storedAds.filter(ad => ad.author === user.name);
-        setUserAds(userAds);
-
-        // Calculer les statistiques utilisateur
-        const stats = {
-          totalAds: userAds.length,
-          activeAds: userAds.filter(ad => ad.isActive).length,
-          totalViews: userAds.reduce((sum, ad) => sum + (ad.views || 0), 0),
-        };
-        setUserStats(stats);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        navigate('/login', { 
+          state: { 
+            from: '/dashboard',
+            message: 'Veuillez vous connecter pour accéder au tableau de bord'
+          } 
+        });
+        return;
       }
+
+      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+      const userAds = storedAds.filter(ad => ad.author === user.name);
+      setUserAds(userAds);
+
+      const stats = {
+        totalAds: userAds.length,
+        activeAds: userAds.filter(ad => ad.isActive).length,
+        totalViews: userAds.reduce((sum, ad) => sum + (ad.views || 0), 0),
+      };
+      setUserStats(stats);
     } catch (error) {
       enqueueSnackbar('Erreur lors du chargement des données', { variant: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [enqueueSnackbar]);
+  }, [navigate, enqueueSnackbar]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleViewAd = (ad) => {
     setLoadingDetails(true);
@@ -142,12 +136,20 @@ const Dashboard = () => {
 
   const handleSave = () => {
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        enqueueSnackbar('Session expirée, veuillez vous reconnecter', { variant: 'error' });
+        navigate('/login');
+        return;
+      }
+
       const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
       const updatedAds = storedAds.map(ad => 
-        ad.id === selectedAd.id ? { ...ad, ...formData } : ad
+        ad.id === selectedAd.id ? { ...ad, ...formData, author: user.name } : ad
       );
       localStorage.setItem('ads', JSON.stringify(updatedAds));
-      setUserAds(updatedAds.filter(ad => ad.author === JSON.parse(localStorage.getItem('user')).name));
+      
+      loadData();
       enqueueSnackbar('Annonce mise à jour avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {
@@ -157,10 +159,18 @@ const Dashboard = () => {
 
   const handleDeleteConfirm = () => {
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        enqueueSnackbar('Session expirée, veuillez vous reconnecter', { variant: 'error' });
+        navigate('/login');
+        return;
+      }
+
       const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
       const updatedAds = storedAds.filter(ad => ad.id !== selectedAd.id);
       localStorage.setItem('ads', JSON.stringify(updatedAds));
-      setUserAds(updatedAds.filter(ad => ad.author === JSON.parse(localStorage.getItem('user')).name));
+      
+      loadData();
       enqueueSnackbar('Annonce supprimée avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {
@@ -177,6 +187,14 @@ const Dashboard = () => {
     setPage(0);
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleNewAd = () => {
+    navigate('/create-ad');
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -187,31 +205,65 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-        Mon Tableau de bord
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
+          Mon Tableau de bord
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleNewAd}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+        >
+          Nouvelle annonce
+        </Button>
+      </Box>
 
-      <Grid container spacing={{ xs: 2, md: 3 }}>
-        <Grid item xs={12} md={6}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Mes statistiques
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar sx={{ width: 56, height: 56, mr: 2 }}>
+                  {JSON.parse(localStorage.getItem('user'))?.name?.[0]}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6">
+                    {JSON.parse(localStorage.getItem('user'))?.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Membre depuis {new Date().toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </Box>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Statistiques
               </Typography>
-              <Grid container spacing={{ xs: 1, sm: 2 }}>
+              <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    Mes annonces : {userStats.totalAds}
+                  <Typography variant="body2" color="text.secondary">
+                    Annonces totales
+                  </Typography>
+                  <Typography variant="h6">
+                    {userStats.totalAds}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    Annonces actives : {userStats.activeAds}
+                  <Typography variant="body2" color="text.secondary">
+                    Annonces actives
+                  </Typography>
+                  <Typography variant="h6">
+                    {userStats.activeAds}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    Vues totales : {userStats.totalViews}
+                  <Typography variant="body2" color="text.secondary">
+                    Vues totales
+                  </Typography>
+                  <Typography variant="h6">
+                    {userStats.totalViews}
                   </Typography>
                 </Grid>
               </Grid>
@@ -219,97 +271,140 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Annonces par catégorie
-              </Typography>
-              {Object.entries(
-                userAds.reduce((acc, ad) => {
-                  acc[ad.category] = (acc[ad.category] || 0) + 1;
-                  return acc;
-                }, {})
-              ).map(([category, count]) => (
-                <Typography key={category} variant="body2" sx={{ ml: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-                  {category}: {count} annonce(s)
-                </Typography>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Mes annonces
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Titre</TableCell>
-                      <TableCell>Catégorie</TableCell>
-                      <TableCell>Prix</TableCell>
-                      <TableCell>Statut</TableCell>
-                      <TableCell>Vues</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {userAds
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((ad) => (
-                        <TableRow key={ad.id}>
-                          <TableCell>{ad.title}</TableCell>
-                          <TableCell>{ad.category}</TableCell>
-                          <TableCell>{ad.price} €</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={ad.isActive ? 'Active' : 'Inactive'}
-                              color={ad.isActive ? 'success' : 'default'}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>{ad.views || 0}</TableCell>
-                          <TableCell>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewAd(ad)}
-                              sx={{ mr: 1 }}
-                            >
-                              <VisibilityIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEdit(ad)}
-                              sx={{ mr: 1 }}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDelete(ad)}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                <Tabs value={activeTab} onChange={handleTabChange}>
+                  <Tab label="Mes annonces" />
+                  <Tab label="Favoris" />
+                  <Tab label="Messages" />
+                </Tabs>
+              </Box>
+
+              {activeTab === 0 && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">
+                      Mes annonces
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddIcon />}
+                      onClick={handleNewAd}
+                      size="small"
+                      sx={{ display: { xs: 'flex', sm: 'none' } }}
+                    >
+                      Nouvelle annonce
+                    </Button>
+                  </Box>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Titre</TableCell>
+                          <TableCell>Catégorie</TableCell>
+                          <TableCell>Prix</TableCell>
+                          <TableCell>Statut</TableCell>
+                          <TableCell>Vues</TableCell>
+                          <TableCell>Actions</TableCell>
                         </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                component="div"
-                count={userAds.length}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[5, 10, 25]}
-              />
+                      </TableHead>
+                      <TableBody>
+                        {userAds.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} align="center">
+                              <Box sx={{ py: 3 }}>
+                                <Typography variant="body1" gutterBottom>
+                                  Vous n'avez pas encore d'annonces
+                                </Typography>
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<AddIcon />}
+                                  onClick={handleNewAd}
+                                  sx={{ mt: 1 }}
+                                >
+                                  Créer une annonce
+                                </Button>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          userAds
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((ad) => (
+                              <TableRow key={ad.id}>
+                                <TableCell>{ad.title}</TableCell>
+                                <TableCell>{ad.category}</TableCell>
+                                <TableCell>{ad.price} €</TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={ad.isActive ? 'Active' : 'Inactive'}
+                                    color={ad.isActive ? 'success' : 'default'}
+                                    size="small"
+                                  />
+                                </TableCell>
+                                <TableCell>{ad.views || 0}</TableCell>
+                                <TableCell>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleViewAd(ad)}
+                                    sx={{ mr: 1 }}
+                                  >
+                                    <VisibilityIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleEdit(ad)}
+                                    sx={{ mr: 1 }}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(ad)}
+                                    color="error"
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  {userAds.length > 0 && (
+                    <TablePagination
+                      component="div"
+                      count={userAds.length}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      rowsPerPageOptions={[5, 10, 25]}
+                    />
+                  )}
+                </>
+              )}
+
+              {activeTab === 1 && (
+                <Box sx={{ py: 3, textAlign: 'center' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    Fonctionnalité à venir
+                  </Typography>
+                </Box>
+              )}
+
+              {activeTab === 2 && (
+                <Box sx={{ py: 3, textAlign: 'center' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    Fonctionnalité à venir
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -377,6 +472,7 @@ const Dashboard = () => {
                   label="Titre"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12}>
@@ -387,6 +483,7 @@ const Dashboard = () => {
                   label="Description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -396,10 +493,11 @@ const Dashboard = () => {
                   type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required>
                   <InputLabel>Catégorie</InputLabel>
                   <Select
                     value={formData.category}
@@ -418,6 +516,7 @@ const Dashboard = () => {
                   label="Département"
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -426,6 +525,7 @@ const Dashboard = () => {
                   label="Pays"
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -434,6 +534,7 @@ const Dashboard = () => {
                   label="WhatsApp"
                   value={formData.whatsapp}
                   onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -442,6 +543,7 @@ const Dashboard = () => {
                   label="Race"
                   value={formData.race}
                   onChange={(e) => setFormData({ ...formData, race: e.target.value })}
+                  required
                 />
               </Grid>
             </Grid>
@@ -449,7 +551,12 @@ const Dashboard = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
-          <Button onClick={handleSave} variant="contained" color="primary">
+          <Button 
+            onClick={handleSave} 
+            variant="contained" 
+            color="primary"
+            disabled={!formData.title || !formData.description || !formData.price || !formData.category}
+          >
             Enregistrer
           </Button>
         </DialogActions>
