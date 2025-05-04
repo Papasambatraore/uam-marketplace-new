@@ -28,12 +28,12 @@ const Footer = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            © {currentYear} UAM Marketplace. Tous droits réservés.
+            © {currentYear} Keur Diourgui. Tous droits réservés.
           </Typography>
           
           <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
             <Typography variant="body2" color="text.secondary">
-              Développé par Samba
+              Développé par Samba : 77490 79 82
             </Typography>
           </Box>
         </Box>

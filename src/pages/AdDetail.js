@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getAds, updateAd } from '../services/firebaseService';
+import { getAds, updateAd } from '../services/githubService';
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -31,7 +31,6 @@ const AdDetail = () => {
         const ads = await getAds();
         console.log('Annonces disponibles:', ads);
         
-        // Recherche de l'annonce avec l'ID exact
         const foundAd = ads.find(ad => ad.id === id);
         console.log('Annonce trouvée:', foundAd);
         
@@ -63,9 +62,11 @@ const AdDetail = () => {
     const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"\n\n` +
                    `Prix: ${ad.price} FCFA\n` +
                    `Catégorie: ${ad.category}\n` +
-                   `Département: ${ad.department}\n` +
+                   `Localisation: ${ad.department}\n` +
                    `Description: ${ad.description}\n\n` +
-                   `Est-ce que cette annonce est toujours disponible ?`;
+                   `Est-ce que cette annonce est toujours disponible ?\n` +
+                   `Si oui, pouvez-vous me donner plus de détails ?\n` +
+                   `Merci d'avance.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
