@@ -43,7 +43,7 @@ function App() {
         <Router>
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar />
-            <Box component="main" sx={{ flexGrow: 1 }}>
+            <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />

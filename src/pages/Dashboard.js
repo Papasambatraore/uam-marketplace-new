@@ -39,6 +39,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
 import { useSnackbar } from 'notistack';
+import { getAds, updateAd, deleteAd } from '../services/githubService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const Dashboard = () => {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback(async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) {
@@ -81,8 +82,16 @@ const Dashboard = () => {
         return;
       }
 
-      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const userAds = storedAds.filter(ad => ad.author === user.name);
+      const allAds = await getAds();
+      console.log('Toutes les annonces:', allAds);
+      console.log('ID utilisateur:', user.id || user._id);
+      
+      const userAds = allAds.filter(ad => {
+        console.log('Annonce userId:', ad.userId);
+        return ad.userId === user.id || ad.userId === user._id;
+      });
+      
+      console.log('Annonces filtrées:', userAds);
       setUserAds(userAds);
 
       const stats = {
@@ -92,6 +101,7 @@ const Dashboard = () => {
       };
       setUserStats(stats);
     } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
       enqueueSnackbar('Erreur lors du chargement des données', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -134,7 +144,7 @@ const Dashboard = () => {
     setOpenDialog(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) {
@@ -143,13 +153,15 @@ const Dashboard = () => {
         return;
       }
 
-      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const updatedAds = storedAds.map(ad => 
-        ad.id === selectedAd.id ? { ...ad, ...formData, author: user.name } : ad
-      );
-      localStorage.setItem('ads', JSON.stringify(updatedAds));
-      
-      loadData();
+      const updatedAd = {
+        ...selectedAd,
+        ...formData,
+        author: user.name,
+        updatedAt: new Date().toISOString()
+      };
+
+      await updateAd(updatedAd);
+      await loadData();
       enqueueSnackbar('Annonce mise à jour avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {
@@ -157,7 +169,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) {
@@ -166,11 +178,8 @@ const Dashboard = () => {
         return;
       }
 
-      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const updatedAds = storedAds.filter(ad => ad.id !== selectedAd.id);
-      localStorage.setItem('ads', JSON.stringify(updatedAds));
-      
-      loadData();
+      await deleteAd(selectedAd.id);
+      await loadData();
       enqueueSnackbar('Annonce supprimée avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {

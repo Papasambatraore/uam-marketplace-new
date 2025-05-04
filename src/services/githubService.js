@@ -59,9 +59,22 @@ const createAdsFile = async (ads) => {
 
 export const addAd = async (newAd) => {
   const ads = await getAds();
-  ads.push(newAd);
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    throw new Error('Utilisateur non connecté');
+  }
+  
+  const adWithUserId = {
+    ...newAd,
+    userId: user.id || user._id,
+    createdAt: new Date().toISOString(),
+    isActive: true,
+    views: 0
+  };
+  
+  ads.push(adWithUserId);
   await saveAds(ads);
-  return newAd;
+  return adWithUserId;
 };
 
 export const updateAd = async (updatedAd) => {
