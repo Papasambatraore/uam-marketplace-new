@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Link } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -22,16 +22,6 @@ const Footer = () => {
           Ce site est protégé par les lois sur le droit d'auteur et la propriété intellectuelle.
           <br />
           Toute reproduction ou copie non autorisée est strictement interdite.
-          <br />
-          Développé par{' '}
-          <Link
-            href="https://github.com/Papasambatraore"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: 'primary.light' }}
-          >
-            Papa Sambatraore
-          </Link>
         </Typography>
       </Container>
     </Box>
