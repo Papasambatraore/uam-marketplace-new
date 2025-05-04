@@ -3,6 +3,11 @@ import { Box, Container, Typography } from '@mui/material';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const currentDate = new Date().toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 
   return (
     <Box
@@ -17,7 +22,7 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Typography variant="body2" align="center">
-          © {currentYear} Keur Djourgui. Tous droits réservés.
+          © {currentYear} - {currentDate} Keur Djourgui. Tous droits réservés.
           <br />
           Développé par Samba : 774907982
         </Typography>
