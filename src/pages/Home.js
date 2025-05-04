@@ -28,7 +28,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AdCard from '../components/AdCard';
 import { regions } from '../data/regions';
-import { getAds } from '../services/firebaseService';
+import { getAds } from '../services/githubService';
 
 const categories = [
   { name: 'Chiens', value: 'chiens', icon: '🐕', color: '#2196f3' },
@@ -496,6 +496,15 @@ const Home = () => {
           ))}
         </Grid>
       )}
+
+      <Box sx={{ mt: 4, mb: 2, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          © 2024 UAM Marketplace. Tous droits réservés.
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Développé par Samba : 77 490 79 82
+        </Typography>
+      </Box>
     </Container>
   );
 };

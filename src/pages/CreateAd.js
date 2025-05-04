@@ -30,7 +30,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { uploadImage } from '../services/imageService';
 import { useSnackbar } from 'notistack';
 import { regions } from '../data/regions';
-import { addAd } from '../services/firebaseService';
+import { addAd } from '../services/githubService';
 
 const animalCategories = [
   { name: 'Chiens', value: 'chiens' },
@@ -87,9 +87,10 @@ const CreateAd = () => {
   }, [navigate, enqueueSnackbar]);
 
   const validateWhatsApp = (number) => {
-    const whatsappRegex = /^[0-9]{10}$/;
+    // Vérifier si le numéro ne contient que des chiffres et des espaces
+    const whatsappRegex = /^[0-9\s]+$/;
     if (!whatsappRegex.test(number)) {
-      setWhatsappError('Le numéro doit contenir exactement 10 chiffres');
+      setWhatsappError('Le numéro ne doit contenir que des chiffres et des espaces');
       return false;
     }
     setWhatsappError('');
@@ -377,7 +378,7 @@ const CreateAd = () => {
                 value={formData.whatsapp}
                 onChange={handleChange}
                 required
-                helperText={whatsappError || "Entrez votre numéro WhatsApp (chiffres uniquement)"}
+                helperText={whatsappError || "Entrez votre numéro WhatsApp (ex: 77 490 79 82)"}
                 error={!!whatsappError}
               />
             </Grid>
