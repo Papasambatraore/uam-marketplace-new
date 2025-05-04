@@ -48,11 +48,9 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -71,20 +69,9 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     enqueueSnackbar('Déconnexion réussie', { variant: 'success' });
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
     setIsLoggedIn(false);
     setUser(null);
     navigate('/');
-    window.location.reload();
-  };
-
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
   };
 
   const handleMobileMenuToggle = () => {
@@ -112,9 +99,8 @@ const Navbar = () => {
         <Button
           key={item.text}
           color="inherit"
-          component={item.path ? RouterLink : 'button'}
+          component={RouterLink}
           to={item.path}
-          onClick={item.onClick}
           startIcon={item.icon}
           sx={{
             mx: 1,
@@ -192,67 +178,6 @@ const Navbar = () => {
     </>
   );
 
-  const renderMobileMenu = (
-    <Drawer
-      anchor="right"
-      open={mobileMenuOpen}
-      onClose={handleMobileMenuToggle}
-    >
-      <Box sx={{ width: 250 }}>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem
-              button
-              key={item.text}
-              component={RouterLink}
-              to={item.path}
-              onClick={() => {
-                if (item.onClick) {
-                  item.onClick();
-                }
-                handleMobileMenuToggle();
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-          {isLoggedIn ? (
-            <ListItem button onClick={handleLogout}>
-              <ListItemIcon><LogoutIcon /></ListItemIcon>
-              <ListItemText primary="Déconnexion" />
-            </ListItem>
-          ) : (
-            <ListItem button component={RouterLink} to="/login" onClick={handleMobileMenuToggle}>
-              <ListItemIcon><AccountCircleIcon /></ListItemIcon>
-              <ListItemText primary="Connexion" />
-            </ListItem>
-          )}
-          <ListItem
-            button
-            component="a"
-            href={`https://wa.me/${SUPPORT_PHONE}`}
-            target="_blank"
-            onClick={handleMobileMenuToggle}
-          >
-            <ListItemIcon><WhatsAppIcon /></ListItemIcon>
-            <ListItemText primary="Support" />
-          </ListItem>
-        </List>
-      </Box>
-    </Drawer>
-  );
-
-  const renderDesktopMenu = (
-    <>
-      {!isMobile && (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {renderMenuItems()}
-        </Box>
-      )}
-    </>
-  );
-
   return (
     <AppBar position="sticky" elevation={1} sx={{ backgroundColor: '#1976d2' }}>
       <Toolbar sx={{ 
@@ -285,7 +210,9 @@ const Navbar = () => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {!isMobile ? (
-            renderDesktopMenu
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {renderMenuItems()}
+            </Box>
           ) : (
             <>
               <IconButton
