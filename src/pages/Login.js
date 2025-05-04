@@ -54,8 +54,9 @@ const Login = () => {
       enqueueSnackbar('Connexion réussie !', { variant: 'success' });
 
       // Rediriger vers la page précédente ou la page d'accueil
-        const from = location.state?.from?.pathname || '/';
-        navigate(from);
+      const from = location.state?.from?.pathname || '/';
+      // Forcer un rechargement de la page après la connexion
+      window.location.href = from;
     } catch (error) {
       enqueueSnackbar(error.message, { variant: 'error' });
     } finally {

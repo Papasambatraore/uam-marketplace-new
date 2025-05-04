@@ -40,7 +40,7 @@ import { useSnackbar } from 'notistack';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const [ads, setAds] = useState([]);
+  const [userAds, setUserAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAd, setSelectedAd] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -49,7 +49,6 @@ const Dashboard = () => {
     totalAds: 0,
     activeAds: 0,
     totalViews: 0,
-    favoriteAds: 0
   });
   const [formData, setFormData] = useState({
     title: '',
@@ -66,7 +65,6 @@ const Dashboard = () => {
   const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
       enqueueSnackbar('Veuillez vous connecter pour accéder au tableau de bord', { 
@@ -83,22 +81,23 @@ const Dashboard = () => {
     }
 
     loadData();
-  }, [navigate, enqueueSnackbar]);
+  }, [navigate, enqueueSnackbar, localStorage.getItem('user')]);
 
   const loadData = useCallback(() => {
     try {
       const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      setAds(storedAds);
-
-      // Calculer les statistiques utilisateur
       const user = JSON.parse(localStorage.getItem('user') || 'null');
+      
       if (user) {
+        // Filtrer uniquement les annonces de l'utilisateur connecté
         const userAds = storedAds.filter(ad => ad.author === user.name);
+        setUserAds(userAds);
+
+        // Calculer les statistiques utilisateur
         const stats = {
           totalAds: userAds.length,
           activeAds: userAds.filter(ad => ad.isActive).length,
           totalViews: userAds.reduce((sum, ad) => sum + (ad.views || 0), 0),
-          favoriteAds: userAds.filter(ad => ad.favorites?.includes(user.id)).length
         };
         setUserStats(stats);
       }
@@ -114,18 +113,12 @@ const Dashboard = () => {
     setSelectedAd(ad);
     setDialogType('view');
     setOpenDialog(true);
-    // Simuler un chargement pour une meilleure expérience utilisateur
     setTimeout(() => {
       setLoadingDetails(false);
     }, 500);
   };
 
   const handleEdit = (ad) => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user.name !== ad.author) {
-      enqueueSnackbar('Vous n\'êtes pas autorisé à modifier cette annonce', { variant: 'error' });
-      return;
-    }
     setSelectedAd(ad);
     setFormData({
       title: ad.title,
@@ -142,11 +135,6 @@ const Dashboard = () => {
   };
 
   const handleDelete = (ad) => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user.name !== ad.author) {
-      enqueueSnackbar('Vous n\'êtes pas autorisé à supprimer cette annonce', { variant: 'error' });
-      return;
-    }
     setSelectedAd(ad);
     setDialogType('delete');
     setOpenDialog(true);
@@ -154,11 +142,12 @@ const Dashboard = () => {
 
   const handleSave = () => {
     try {
-      const updatedAds = ads.map(ad => 
+      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+      const updatedAds = storedAds.map(ad => 
         ad.id === selectedAd.id ? { ...ad, ...formData } : ad
       );
       localStorage.setItem('ads', JSON.stringify(updatedAds));
-      setAds(updatedAds);
+      setUserAds(updatedAds.filter(ad => ad.author === JSON.parse(localStorage.getItem('user')).name));
       enqueueSnackbar('Annonce mise à jour avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {
@@ -168,9 +157,10 @@ const Dashboard = () => {
 
   const handleDeleteConfirm = () => {
     try {
-      const updatedAds = ads.filter(ad => ad.id !== selectedAd.id);
+      const storedAds = JSON.parse(localStorage.getItem('ads') || '[]');
+      const updatedAds = storedAds.filter(ad => ad.id !== selectedAd.id);
       localStorage.setItem('ads', JSON.stringify(updatedAds));
-      setAds(updatedAds);
+      setUserAds(updatedAds.filter(ad => ad.author === JSON.parse(localStorage.getItem('user')).name));
       enqueueSnackbar('Annonce supprimée avec succès', { variant: 'success' });
       setOpenDialog(false);
     } catch (error) {
@@ -198,36 +188,10 @@ const Dashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, px: { xs: 1, sm: 2 } }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-        Tableau de bord
+        Mon Tableau de bord
       </Typography>
 
       <Grid container spacing={{ xs: 2, md: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Statistiques générales
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                Nombre total d'annonces : {ads.length}
-              </Typography>
-              <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }, mt: 1 }}>
-                Annonces par catégorie :
-              </Typography>
-              {Object.entries(
-                ads.reduce((acc, ad) => {
-                  acc[ad.category] = (acc[ad.category] || 0) + 1;
-                  return acc;
-                }, {})
-              ).map(([category, count]) => (
-                <Typography key={category} variant="body2" sx={{ ml: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-                  {category}: {count} annonce(s)
-                </Typography>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -250,203 +214,169 @@ const Dashboard = () => {
                     Vues totales : {userStats.totalViews}
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    Annonces favorites : {userStats.favoriteAds}
-                  </Typography>
-                </Grid>
               </Grid>
             </CardContent>
           </Card>
         </Grid>
 
+        <Grid item xs={12} md={6}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                Annonces par catégorie
+              </Typography>
+              {Object.entries(
+                userAds.reduce((acc, ad) => {
+                  acc[ad.category] = (acc[ad.category] || 0) + 1;
+                  return acc;
+                }, {})
+              ).map(([category, count]) => (
+                <Typography key={category} variant="body2" sx={{ ml: 2, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+                  {category}: {count} annonce(s)
+                </Typography>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
         <Grid item xs={12}>
-          <Paper sx={{ p: { xs: 1, sm: 2 } }}>
-            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-              Mes annonces
-            </Typography>
-            <TableContainer sx={{ 
-              maxHeight: { xs: '400px', sm: '500px', md: '600px' },
-              overflowX: 'auto'
-            }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>Titre</TableCell>
-                    <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>Catégorie</TableCell>
-                    <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>Prix</TableCell>
-                    <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>Localisation</TableCell>
-                    <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {ads
-                    .filter(ad => ad.author === JSON.parse(localStorage.getItem('user'))?.name)
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((ad) => (
-                      <TableRow key={ad.id}>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>{ad.title}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>{ad.category}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>{ad.price} FCFA</TableCell>
-                        <TableCell sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>{ad.department}, {ad.country}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
-                            <IconButton 
-                              onClick={() => handleViewAd(ad)} 
-                              color="primary"
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                Mes annonces
+              </Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Titre</TableCell>
+                      <TableCell>Catégorie</TableCell>
+                      <TableCell>Prix</TableCell>
+                      <TableCell>Statut</TableCell>
+                      <TableCell>Vues</TableCell>
+                      <TableCell>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {userAds
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((ad) => (
+                        <TableRow key={ad.id}>
+                          <TableCell>{ad.title}</TableCell>
+                          <TableCell>{ad.category}</TableCell>
+                          <TableCell>{ad.price} €</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={ad.isActive ? 'Active' : 'Inactive'}
+                              color={ad.isActive ? 'success' : 'default'}
                               size="small"
-                              sx={{ p: { xs: 0.5, sm: 1 } }}
-                            >
-                              <VisibilityIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
-                            </IconButton>
-                            <IconButton 
-                              onClick={() => handleEdit(ad)} 
-                              color="primary"
+                            />
+                          </TableCell>
+                          <TableCell>{ad.views || 0}</TableCell>
+                          <TableCell>
+                            <IconButton
                               size="small"
-                              sx={{ p: { xs: 0.5, sm: 1 } }}
+                              onClick={() => handleViewAd(ad)}
+                              sx={{ mr: 1 }}
                             >
-                              <EditIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                              <VisibilityIcon />
                             </IconButton>
-                            <IconButton 
-                              onClick={() => handleDelete(ad)} 
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEdit(ad)}
+                              sx={{ mr: 1 }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(ad)}
                               color="error"
-                              size="small"
-                              sx={{ p: { xs: 0.5, sm: 1 } }}
                             >
-                              <DeleteIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                              <DeleteIcon />
                             </IconButton>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={ads.filter(ad => ad.author === JSON.parse(localStorage.getItem('user'))?.name).length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelRowsPerPage="Lignes par page"
-              labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count}`}
-              sx={{
-                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                }
-              }}
-            />
-          </Paper>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component="div"
+                count={userAds.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
-      <Dialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)} 
-        maxWidth="md" 
+      {/* Dialog pour voir les détails d'une annonce */}
+      <Dialog
+        open={openDialog && dialogType === 'view'}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            m: { xs: 1, sm: 2 },
-            width: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)' }
-          }
-        }}
       >
-        <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-          {dialogType === 'view' ? 'Détails de l\'annonce' : 
-           dialogType === 'edit' ? 'Modifier l\'annonce' : 
-           'Supprimer l\'annonce'}
-        </DialogTitle>
+        <DialogTitle>Détails de l'annonce</DialogTitle>
         <DialogContent>
           {loadingDetails ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
-          ) : dialogType === 'view' && selectedAd ? (
-            <Box sx={{ p: { xs: 1, sm: 2 } }}>
-              <Grid container spacing={{ xs: 1, sm: 3 }}>
-                <Grid item xs={12}>
-                  <Typography variant="h5" gutterBottom sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
-                    {selectedAd.title}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip 
-                      label={selectedAd.category} 
-                      color="primary" 
-                      size="small"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
-                    />
-                    <Chip 
-                      label={`${selectedAd.price} FCFA`} 
-                      color="secondary"
-                      size="small"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                    Description
-                  </Typography>
-                  <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    {selectedAd.description}
-                  </Typography>
+          ) : selectedAd && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>{selectedAd.title}</Typography>
+              <Typography variant="body1" paragraph>{selectedAd.description}</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1">Prix: {selectedAd.price} €</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                    Localisation
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    {selectedAd.department}, {selectedAd.country}
-                  </Typography>
+                  <Typography variant="subtitle1">Catégorie: {selectedAd.category}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                    Contact
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                    WhatsApp: {selectedAd.whatsapp}
-                  </Typography>
+                  <Typography variant="subtitle1">Département: {selectedAd.department}</Typography>
                 </Grid>
-                {selectedAd.race && (
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
-                      Race
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                      {selectedAd.race}
-                    </Typography>
-                  </Grid>
-                )}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: { xs: 1, sm: 2 } }} />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
-                      {selectedAd.author?.[0]}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                        {selectedAd.author}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-                        Publié le {new Date(selectedAd.date).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                  </Box>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1">Pays: {selectedAd.country}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1">WhatsApp: {selectedAd.whatsapp}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1">Race: {selectedAd.race}</Typography>
                 </Grid>
               </Grid>
             </Box>
-          ) : dialogType === 'edit' ? (
-            <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mt: 1 }}>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Fermer</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog pour modifier une annonce */}
+      <Dialog
+        open={openDialog && dialogType === 'edit'}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Modifier l'annonce</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Titre"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  size="small"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -457,81 +387,92 @@ const Dashboard = () => {
                   label="Description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  size="small"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
+                  label="Prix"
                   type="number"
-                  label="Prix (FCFA)"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  size="small"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth>
                   <InputLabel>Catégorie</InputLabel>
                   <Select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     label="Catégorie"
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
-                    <MenuItem value="chiens">Chiens</MenuItem>
-                    <MenuItem value="lapins">Lapins</MenuItem>
-                    <MenuItem value="volailles">Volailles</MenuItem>
-                    <MenuItem value="moutons">Moutons</MenuItem>
-                    <MenuItem value="reptiles">Reptiles</MenuItem>
-                    <MenuItem value="autres">Autres</MenuItem>
+                    <MenuItem value="Vente">Vente</MenuItem>
+                    <MenuItem value="Location">Location</MenuItem>
+                    <MenuItem value="Échange">Échange</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Département"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Pays"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="WhatsApp"
+                  value={formData.whatsapp}
+                  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Race"
+                  value={formData.race}
+                  onChange={(e) => setFormData({ ...formData, race: e.target.value })}
+                />
+              </Grid>
             </Grid>
-          ) : (
-            <Typography sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-              Êtes-vous sûr de vouloir supprimer cette annonce ?
-            </Typography>
-          )}
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ px: { xs: 1, sm: 2 }, py: { xs: 1, sm: 1.5 } }}>
-          <Button 
-            onClick={() => setOpenDialog(false)}
-            size="small"
-            sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
-          >
-            {dialogType === 'view' ? 'Fermer' : 'Annuler'}
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
+          <Button onClick={handleSave} variant="contained" color="primary">
+            Enregistrer
           </Button>
-          {dialogType === 'edit' ? (
-            <Button 
-              onClick={handleSave} 
-              variant="contained" 
-              color="primary"
-              size="small"
-              sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
-            >
-              Enregistrer
-            </Button>
-          ) : dialogType === 'delete' ? (
-            <Button 
-              onClick={handleDeleteConfirm} 
-              variant="contained" 
-              color="error"
-              size="small"
-              sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
-            >
-              Supprimer
-            </Button>
-          ) : null}
         </DialogActions>
       </Dialog>
 
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading}
+      {/* Dialog de confirmation de suppression */}
+      <Dialog
+        open={openDialog && dialogType === 'delete'}
+        onClose={() => setOpenDialog(false)}
       >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
