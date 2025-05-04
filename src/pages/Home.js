@@ -79,9 +79,13 @@ const Home = () => {
           price: ad.price || '0',
           category: ad.category || 'Non spécifié',
           department: ad.department || 'Non spécifié',
+          country: ad.country || 'Non spécifié',
           whatsapp: ad.whatsapp || '',
           author: ad.author || 'Anonyme',
           date: ad.date || new Date().toISOString(),
+          views: ad.views || 0,
+          status: 'active', // Forcer le statut à actif
+          isActive: true // Forcer l'activité
         }));
         
         // Tri par date (les plus récentes en premier)
@@ -139,9 +143,9 @@ const Home = () => {
   const handleCreateAd = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
-      navigate('/publier-annonce');
+      navigate('/create-ad');
     } else {
-      navigate('/login', { state: { from: '/publier-annonce' } });
+      navigate('/login', { state: { from: '/create-ad' } });
     }
   };
 
@@ -356,7 +360,7 @@ const Home = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate('/login', { state: { from: '/publier-annonce' } })}
+              onClick={() => navigate('/login', { state: { from: '/create-ad' } })}
               startIcon={<AddIcon />}
               sx={{ 
                 minWidth: 200,

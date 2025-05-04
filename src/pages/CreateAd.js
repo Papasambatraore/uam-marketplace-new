@@ -187,8 +187,8 @@ const CreateAd = () => {
     }
 
     try {
-    setLoading(true);
-    setError('');
+      setLoading(true);
+      setError('');
 
       const user = JSON.parse(localStorage.getItem('user'));
       const newAd = {
@@ -197,17 +197,34 @@ const CreateAd = () => {
         author: user.name,
         authorAvatar: user.avatar,
         date: new Date().toISOString(),
+        status: 'active',
+        views: 0,
+        favorites: [],
+        country: formData.country || 'Non spécifié',
+        department: formData.department || 'Non spécifié',
+        category: formData.category || 'Non spécifié',
+        price: formData.price || '0',
+        whatsapp: formData.whatsapp,
+        images: formData.images,
+        imagePreviews: formData.imagePreviews,
+        description: formData.description,
+        title: formData.title,
+        race: formData.race || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true
       };
 
       const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      localStorage.setItem('ads', JSON.stringify([...existingAds, newAd]));
+      const updatedAds = [...existingAds, newAd];
+      localStorage.setItem('ads', JSON.stringify(updatedAds));
 
       enqueueSnackbar('Votre annonce a été publiée avec succès !', {
         variant: 'success'
       });
 
       setTimeout(() => {
-        navigate('/mes-annonces');
+        navigate('/dashboard');
       }, 2000);
     } catch (error) {
       setError('Une erreur est survenue lors de la publication de votre annonce. Veuillez réessayer.');
