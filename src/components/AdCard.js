@@ -11,9 +11,11 @@ import {
   Chip,
   Button,
   Avatar,
+  Tooltip,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { styled } from '@mui/material/styles';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -65,7 +67,19 @@ const AdCard = ({ ad }) => {
 
   const handleWhatsAppClick = (e) => {
     e.stopPropagation();
-    window.open(`https://wa.me/${ad.whatsapp}`, '_blank');
+    const phoneNumber = ad.whatsapp.replace(/\D/g, '');
+    const message = `Bonjour, je suis intéressé par votre annonce sur Keur Diourgui\n\n` +
+                   `📌 Titre: ${ad.title}\n` +
+                   `💰 Prix: ${ad.price} FCFA\n` +
+                   `🏷️ Catégorie: ${ad.category}\n` +
+                   `📍 Localisation: ${ad.department}\n` +
+                   `📝 Description: ${ad.description}\n` +
+                   (ad.race ? `🐾 Race: ${ad.race}\n` : '') +
+                   `\n❓ Est-ce que cette annonce est toujours disponible ?\n` +
+                   `Si oui, pouvez-vous me donner plus de détails ?\n` +
+                   `Merci d'avance.`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -142,15 +156,20 @@ const AdCard = ({ ad }) => {
               {ad.author}
             </Typography>
           </Box>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<WhatsAppIcon />}
-          onClick={handleWhatsAppClick}
-            sx={{ minWidth: 'auto' }}
-        >
-          Contacter
-        </Button>
+        <Tooltip title="Contacter via WhatsApp">
+          <IconButton
+            color="success"
+            onClick={handleWhatsAppClick}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'success.light',
+                color: 'white'
+              }
+            }}
+          >
+            <WhatsAppIcon />
+          </IconButton>
+        </Tooltip>
         </Box>
       </CardContent>
     </StyledCard>
