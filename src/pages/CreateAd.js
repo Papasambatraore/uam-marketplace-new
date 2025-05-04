@@ -18,10 +18,15 @@ import {
   IconButton,
   Alert,
   FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { uploadImage } from '../services/imageService';
 import { useSnackbar } from 'notistack';
 import { regions } from '../data/regions';
@@ -39,6 +44,9 @@ const Input = styled('input')({
   display: 'none',
 });
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB en octets
+const MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20MB en octets
+
 const CreateAd = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -55,15 +63,37 @@ const CreateAd = () => {
     whatsapp: '',
     images: [],
     race: '',
+    imagePreviews: [],
   });
+  const [previewImage, setPreviewImage] = useState(null);
+  const [whatsappError, setWhatsappError] = useState('');
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
     const user = localStorage.getItem('user');
     if (!user) {
-      navigate('/login', { state: { from: '/publier-annonce' } });
+      enqueueSnackbar('Veuillez vous connecter pour publier une annonce', { 
+        variant: 'info',
+        autoHideDuration: 3000
+      });
+      navigate('/login', { 
+        state: { 
+          from: '/create-ad',
+          message: 'Veuillez vous connecter pour publier une annonce'
+        } 
+      });
     }
-  }, [navigate]);
+  }, [navigate, enqueueSnackbar]);
+
+  const validateWhatsApp = (number) => {
+    const whatsappRegex = /^[0-9]{10}$/;
+    if (!whatsappRegex.test(number)) {
+      setWhatsappError('Le numéro doit contenir 10 chiffres (ex: 77XXXXXXXX)');
+      return false;
+    }
+    setWhatsappError('');
+    return true;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,6 +101,25 @@ const CreateAd = () => {
       ...prev,
       [name]: value
     }));
+
+    if (name === 'whatsapp') {
+      validateWhatsApp(value);
+    }
+  };
+
+  const validateFileSize = (file) => {
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`L'image ${file.name} dépasse la taille maximale de 5MB`);
+    }
+    return true;
+  };
+
+  const validateTotalSize = (files) => {
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      throw new Error('La taille totale des images ne doit pas dépasser 20MB');
+    }
+    return true;
   };
 
   const handleImageChange = async (e) => {
@@ -79,6 +128,18 @@ const CreateAd = () => {
       try {
         setLoading(true);
         setError('');
+
+        // Validation de la taille des fichiers
+        files.forEach(validateFileSize);
+        validateTotalSize(files);
+
+        // Prévisualisation des images
+        const previews = files.map(file => URL.createObjectURL(file));
+        setFormData(prev => ({
+          ...prev,
+          imagePreviews: [...(prev.imagePreviews || []), ...previews]
+        }));
+
         const uploadedImages = await Promise.all(
           files.map(file => uploadImage(file))
         );
@@ -86,8 +147,11 @@ const CreateAd = () => {
           ...prev,
           images: [...prev.images, ...uploadedImages]
         }));
+
+        enqueueSnackbar('Images téléchargées avec succès', { variant: 'success' });
       } catch (error) {
-        setError('Erreur lors du téléchargement des images');
+        setError(error.message);
+        enqueueSnackbar(error.message, { variant: 'error' });
       } finally {
         setLoading(false);
       }
@@ -97,14 +161,23 @@ const CreateAd = () => {
   const handleRemoveImage = (index) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
+      imagePreviews: prev.imagePreviews.filter((_, i) => i !== index)
     }));
+  };
+
+  const handlePreviewImage = (image) => {
+    setPreviewImage(image);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.price || !formData.category || !formData.department || !formData.whatsapp) {
       setError('Veuillez remplir tous les champs obligatoires marqués d\'un astérisque (*)');
+      return;
+    }
+
+    if (!validateWhatsApp(formData.whatsapp)) {
       return;
     }
 
@@ -279,8 +352,8 @@ const CreateAd = () => {
                 value={formData.whatsapp}
                 onChange={handleChange}
                 required
-                helperText="Format: 77XXXXXXXX"
-                error={error && !formData.whatsapp}
+                helperText={whatsappError || "Format: 77XXXXXXXX"}
+                error={!!whatsappError}
               />
             </Grid>
             <Grid item xs={12}>
@@ -288,14 +361,19 @@ const CreateAd = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   Photos de l'animal
                 </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Taille maximale par image : 5MB
+                  <br />
+                  Taille totale maximale : 20MB
+                </Typography>
                 <label htmlFor="image-upload">
                   <Input
-                  accept="image/*"
+                    accept="image/*"
                     id="image-upload"
-                  type="file"
-                  multiple
-                  onChange={handleImageChange}
-                />
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
                   <Button
                     variant="contained"
                     component="span"
@@ -308,12 +386,14 @@ const CreateAd = () => {
               {loading && <CircularProgress />}
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
               <ImageList cols={3} rowHeight={164}>
-                {formData.images.map((image, index) => (
+                {formData.imagePreviews?.map((preview, index) => (
                   <ImageListItem key={index}>
                     <img
-                      src={image}
-                      alt={`Upload ${index + 1}`}
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
                       loading="lazy"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handlePreviewImage(preview)}
                     />
                     <IconButton
                       sx={{
@@ -325,6 +405,17 @@ const CreateAd = () => {
                       onClick={() => handleRemoveImage(index)}
                     >
                       <DeleteIcon />
+                    </IconButton>
+                    <IconButton
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        bgcolor: 'rgba(255, 255, 255, 0.8)',
+                      }}
+                      onClick={() => handlePreviewImage(preview)}
+                    >
+                      <ZoomInIcon />
                     </IconButton>
                   </ImageListItem>
                 ))}
@@ -344,6 +435,32 @@ const CreateAd = () => {
           </Grid>
         </form>
       </Paper>
+
+      <Dialog
+        open={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Prévisualisation de l'image</DialogTitle>
+        <DialogContent>
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '70vh',
+                objectFit: 'contain'
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewImage(null)}>Fermer</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
