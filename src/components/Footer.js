@@ -2,13 +2,6 @@ import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  const currentDate = new Date().toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
   return (
     <Box
       component="footer"
@@ -22,7 +15,7 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Typography variant="body2" align="center">
-          © {currentYear} - {currentDate} Keur Djourgui. Tous droits réservés.
+          © 2025 Keur Djourgui. Tous droits réservés.
           <br />
           Développé par Samba : 774907982
         </Typography>
