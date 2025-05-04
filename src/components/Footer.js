@@ -17,11 +17,9 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Typography variant="body2" align="center">
-          © {currentYear} UAM Marketplace. Tous droits réservés.
+          © {currentYear} Keur Djourgui. Tous droits réservés.
           <br />
-          Ce site est protégé par les lois sur le droit d'auteur et la propriété intellectuelle.
-          <br />
-          Toute reproduction ou copie non autorisée est strictement interdite.
+          Développé par Samba : 774907982
         </Typography>
       </Container>
     </Box>

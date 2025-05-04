@@ -30,6 +30,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import { uploadImage } from '../services/imageService';
 import { useSnackbar } from 'notistack';
 import { regions } from '../data/regions';
+import { addAd } from '../services/githubService';
 
 const animalCategories = [
   { name: 'Chiens', value: 'chiens' },
@@ -88,7 +89,7 @@ const CreateAd = () => {
   const validateWhatsApp = (number) => {
     const whatsappRegex = /^[0-9]{10}$/;
     if (!whatsappRegex.test(number)) {
-      setWhatsappError('Le numéro doit contenir 10 chiffres (ex: 77XXXXXXXX)');
+      setWhatsappError('Le numéro doit contenir exactement 10 chiffres');
       return false;
     }
     setWhatsappError('');
@@ -191,10 +192,15 @@ const CreateAd = () => {
       setError('');
 
       const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       const newAd = {
         ...formData,
         id: Date.now().toString(),
-        author: user.name,
+        userId: user.id || user._id,
+        author: user.name || user.username,
         authorAvatar: user.avatar,
         date: new Date().toISOString(),
         status: 'active',
@@ -215,9 +221,9 @@ const CreateAd = () => {
         isActive: true
       };
 
-      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
-      const updatedAds = [...existingAds, newAd];
-      localStorage.setItem('ads', JSON.stringify(updatedAds));
+      console.log('Nouvelle annonce à sauvegarder:', newAd);
+      await addAd(newAd);
+      console.log('Annonce sauvegardée avec succès');
 
       enqueueSnackbar('Votre annonce a été publiée avec succès !', {
         variant: 'success'
@@ -227,7 +233,9 @@ const CreateAd = () => {
         navigate('/dashboard');
       }, 2000);
     } catch (error) {
-      setError('Une erreur est survenue lors de la publication de votre annonce. Veuillez réessayer.');
+      console.error('Erreur lors de la création de l\'annonce:', error);
+      setError(error.message || 'Une erreur est survenue lors de la publication de votre annonce. Veuillez réessayer.');
+      enqueueSnackbar(error.message || 'Erreur lors de la publication de l\'annonce', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -369,7 +377,7 @@ const CreateAd = () => {
                 value={formData.whatsapp}
                 onChange={handleChange}
                 required
-                helperText={whatsappError || "Format: 77XXXXXXXX"}
+                helperText={whatsappError || "Entrez votre numéro WhatsApp (chiffres uniquement)"}
                 error={!!whatsappError}
               />
             </Grid>
@@ -385,12 +393,12 @@ const CreateAd = () => {
                 </Typography>
                 <label htmlFor="image-upload">
                   <Input
-                    accept="image/*"
+                  accept="image/*"
                     id="image-upload"
-                    type="file"
-                    multiple
-                    onChange={handleImageChange}
-                  />
+                  type="file"
+                  multiple
+                  onChange={handleImageChange}
+                />
                   <Button
                     variant="contained"
                     component="span"
