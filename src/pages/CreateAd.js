@@ -87,10 +87,8 @@ const CreateAd = () => {
   }, [navigate, enqueueSnackbar]);
 
   const validateWhatsApp = (number) => {
-    // Vérifier si le numéro ne contient que des chiffres et des espaces
-    const whatsappRegex = /^[0-9\s]+$/;
-    if (!whatsappRegex.test(number)) {
-      setWhatsappError('Le numéro ne doit contenir que des chiffres et des espaces');
+    if (!number || number.trim() === '') {
+      setWhatsappError('Le numéro WhatsApp est requis');
       return false;
     }
     setWhatsappError('');
@@ -378,7 +376,7 @@ const CreateAd = () => {
                 value={formData.whatsapp}
                 onChange={handleChange}
                 required
-                helperText={whatsappError || "Entrez votre numéro WhatsApp (ex: 77 490 79 82)"}
+                helperText="Entrez votre numéro WhatsApp"
                 error={!!whatsappError}
               />
             </Grid>

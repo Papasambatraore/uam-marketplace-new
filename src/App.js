@@ -23,6 +23,7 @@ import AdminPanel from './components/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Footer from './components/Footer';
 import { Box } from '@mui/material';
+import Header from './components/Header';
 
 const theme = createTheme({
   palette: {
@@ -39,57 +40,58 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <SnackbarProvider maxSnack={3}>
-      <CssBaseline />
-      <Router>
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Navbar />
-          <Box component="main" sx={{ flexGrow: 1 }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              <Route path="/annonce/:id" element={<AdDetail />} />
-              <Route path="/create-ad" element={<CreateAd />} />
-              <Route path="/edit-ad/:id" element={
-                <ProtectedRoute>
-                  <EditAd />
-                </ProtectedRoute>
-              } />
-              <Route path="/my-ads" element={
-                <ProtectedRoute>
-                  <MyAds />
-                </ProtectedRoute>
-              } />
-              <Route path="/favorites" element={
-                <ProtectedRoute>
-                  <Favorites />
-                </ProtectedRoute>
-              } />
-              <Route path="/search" element={<SearchResults />} />
-              <Route path="/change-password" element={
+        <CssBaseline />
+        <Router>
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Header />
+            <Box component="main" sx={{ flexGrow: 1 }}>
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/profile" element={
                   <ProtectedRoute>
-                  <ChangePassword />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <AdminPanel />
+                    <Profile />
                   </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                } />
+                <Route path="/annonce/:id" element={<AdDetail />} />
+                <Route path="/create-ad" element={<CreateAd />} />
+                <Route path="/edit-ad/:id" element={
+                  <ProtectedRoute>
+                    <EditAd />
+                  </ProtectedRoute>
+                } />
+                <Route path="/my-ads" element={
+                  <ProtectedRoute>
+                    <MyAds />
+                  </ProtectedRoute>
+                } />
+                <Route path="/favorites" element={
+                  <ProtectedRoute>
+                    <Favorites />
+                  </ProtectedRoute>
+                } />
+                <Route path="/search" element={<SearchResults />} />
+                <Route path="/change-password" element={
+                  <ProtectedRoute>
+                    <ChangePassword />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminPanel />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Box>
+            <Footer />
           </Box>
-          <Footer />
-        </Box>
-      </Router>
+        </Router>
       </SnackbarProvider>
     </ThemeProvider>
   );

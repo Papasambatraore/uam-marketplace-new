@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <Box
       component="footer"
@@ -9,16 +11,32 @@ const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: (theme) => theme.palette.grey[900],
-        color: 'white'
+        backgroundColor: (theme) =>
+          theme.palette.mode === 'light'
+            ? theme.palette.grey[200]
+            : theme.palette.grey[800],
       }}
     >
       <Container maxWidth="lg">
-        <Typography variant="body2" align="center">
-          © 2025 Keur Djourgui. Tous droits réservés.
-          <br />
-          Développé par Samba : 774907982
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            © {currentYear} UAM Marketplace. Tous droits réservés.
+          </Typography>
+          
+          <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
+            <Typography variant="body2" color="text.secondary">
+              Développé par Samba
+            </Typography>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );
