@@ -23,7 +23,6 @@ import AdminPanel from './components/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Footer from './components/Footer';
 import { Box } from '@mui/material';
-import Header from './components/Header';
 
 const theme = createTheme({
   palette: {
@@ -43,9 +42,8 @@ function App() {
         <CssBaseline />
         <Router>
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Header />
+            <Navbar />
             <Box component="main" sx={{ flexGrow: 1 }}>
-              <Navbar />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
