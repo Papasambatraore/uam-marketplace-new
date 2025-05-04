@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
@@ -10,6 +11,14 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Connexion à MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connecté à MongoDB'))
+.catch(err => console.error('Erreur de connexion à MongoDB:', err));
+
 // Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -18,6 +27,10 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
+
+// Routes d'administration
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
 
 // Route pour l'envoi d'email de bienvenue
 app.post('/api/send-welcome-email', async (req, res) => {

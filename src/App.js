@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
-import AdDetails from './pages/AdDetails';
+import AdDetail from './pages/AdDetail';
 import CreateAd from './pages/CreateAd';
 import EditAd from './pages/EditAd';
 import MyAds from './pages/MyAds';
@@ -19,7 +19,6 @@ import NotFound from './pages/NotFound';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
-import AdDetail from './pages/AdDetail';
 import AdminPanel from './components/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -47,25 +46,48 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/ads/:id" element={<AdDetails />} />
-          <Route path="/create-ad" element={<CreateAd />} />
-          <Route path="/publier-annonce" element={<CreateAd />} />
-          <Route path="/edit-ad/:id" element={<EditAd />} />
-          <Route path="/my-ads" element={<MyAds />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
           <Route path="/annonce/:id" element={<AdDetail />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/create-ad" element={
+            <ProtectedRoute>
+              <CreateAd />
+            </ProtectedRoute>
+          } />
+          <Route path="/edit-ad/:id" element={
+            <ProtectedRoute>
+              <EditAd />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-ads" element={
+            <ProtectedRoute>
+              <MyAds />
+            </ProtectedRoute>
+          } />
+          <Route path="/favorites" element={
+            <ProtectedRoute>
+              <Favorites />
+            </ProtectedRoute>
+          } />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/change-password" element={
+            <ProtectedRoute>
+              <ChangePassword />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
