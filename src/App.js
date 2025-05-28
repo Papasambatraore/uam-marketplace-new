@@ -13,7 +13,7 @@ import CreateAd from './pages/CreateAd';
 import EditAd from './pages/EditAd';
 import MyAds from './pages/MyAds';
 import Favorites from './pages/Favorites';
-import SearchResults from './pages/SearchResults';
+import Marketplace from './pages/Marketplace';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import ForgotPassword from './pages/ForgotPassword';
@@ -27,10 +27,43 @@ import { Box } from '@mui/material';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#1B4D3E',
+      light: '#2E7D32',
+      dark: '#0D2B1E',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#FFA000',
+      light: '#FFB74D',
+      dark: '#F57C00',
+    },
+    background: {
+      default: '#F5F5F5',
+      paper: '#FFFFFF',
+    },
+  },
+  typography: {
+    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 700,
+    },
+    h2: {
+      fontWeight: 600,
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 600,
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          padding: '8px 24px',
+        },
+      },
     },
   },
 });
@@ -72,7 +105,7 @@ function App() {
                     <Favorites />
                   </ProtectedRoute>
                 } />
-                <Route path="/search" element={<SearchResults />} />
+                <Route path="/search" element={<Marketplace />} />
                 <Route path="/change-password" element={
                   <ProtectedRoute>
                     <ChangePassword />

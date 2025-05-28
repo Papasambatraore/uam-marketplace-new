@@ -59,12 +59,14 @@ const AdDetail = () => {
 
   const handleWhatsAppClick = () => {
     const phoneNumber = ad.whatsapp.replace(/\D/g, '');
-    const message = `Bonjour, je suis intéressé par votre annonce "${ad.title}"\n\n` +
-                   `Prix: ${ad.price} FCFA\n` +
-                   `Catégorie: ${ad.category}\n` +
-                   `Localisation: ${ad.department}\n` +
-                   `Description: ${ad.description}\n\n` +
-                   `Est-ce que cette annonce est toujours disponible ?\n` +
+    const message = `Bonjour, je suis intéressé par votre annonce sur Keur Diourgui\n\n` +
+                   `📌 Titre: ${ad.title}\n` +
+                   `💰 Prix: ${ad.price} FCFA\n` +
+                   `🏷️ Catégorie: ${ad.category}\n` +
+                   `📍 Localisation: ${ad.department}\n` +
+                   `📝 Description: ${ad.description}\n` +
+                   (ad.race ? `🐾 Race: ${ad.race}\n` : '') +
+                   `\n❓ Est-ce que cette annonce est toujours disponible ?\n` +
                    `Si oui, pouvez-vous me donner plus de détails ?\n` +
                    `Merci d'avance.`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
